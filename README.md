@@ -1,5 +1,7 @@
 # JungHoonGhae Skills
 
+[![skills.sh](https://skills-badge.vercel.app/badge/JungHoonGhae/skills?style=flat-square&label=installs)](https://skills.sh/JungHoonGhae/skills)
+
 AI agent skills collection for Claude Code, OpenCode, and other AI coding assistants.
 
 ## Skills
