@@ -1,427 +1,210 @@
 ---
 name: readme-doctor
-description: Analyze GitHub repositories to generate README templates based on common patterns. Use when the user provides a GitHub ID/URL and wants to create a README for their current project. Triggers on requests like "create a README based on my GitHub style", "generate README from my repos", "analyze my GitHub for README patterns", or "make a README matching my other projects".
+description: README diagnosis and treatment. Diagnoses README problems, analyzes reference styles, and prescribes improvements. Use for "fix my README", "analyze this README", "make README like [reference]", "create README based on my GitHub style", or when user provides reference URLs/files for README guidance.
 ---
 
 # README Doctor
 
-Generate README templates by analyzing common patterns across a user's GitHub repositories.
+README 진단과 처방. 문제를 진단하고, 레퍼런스를 분석하고, 개선안을 처방합니다.
 
-## Workflow
-
-1. **Identify project type** → OSS, Personal, Internal, or Config
-2. **Parse GitHub input** → Extract username/org from ID or URL
-3. **Fetch repositories** → Get latest 3+ repos via `gh` CLI
-4. **Read READMEs** → Extract content from each repo
-5. **Analyze patterns** → Find common sections, styles, formatting
-6. **Detect project info** → Auto-scan current directory for metadata
-7. **Generate template** → Create README.md with detected patterns + project info
-
-## Project Types
-
-Different audiences need different information. **Always ask** if unclear.
-
-| Type | Audience | Key Sections | Template |
-|------|----------|--------------|----------|
-| **Open Source** | Contributors, users | Install, Usage, Contributing, License | `templates/oss.md` |
-| **Personal** | Future you, portfolio | What it does, Tech stack, Learnings | `templates/personal.md` |
-| **Internal** | Teammates, new hires | Setup, Architecture, Runbooks | `templates/internal.md` |
-| **Config** | Future you (confused) | What's here, Why, Gotchas | `templates/xdg-config.md` |
-
-## Cognitive Funneling
-
-Order sections from **broad to specific**, letting readers "short circuit" quickly:
+## 진단 프로세스
 
 ```
-Name → One-liner → Usage → API → Install → License
+환자(README) 접수 → 진단 → 처방 → 치료
 ```
 
-Each step takes the reader deeper. Those who reach the bottom are genuinely interested.
+## Mode 1: 진단 & 치료 (기본)
 
-> The ideal README is as short as it can be without being any shorter.
+현재 프로젝트의 README를 진단하고 처방합니다.
 
-## Step 1: Identify Project Type
-
-**Ask:** "What type of project is this?"
-
-| Task | When |
-|------|------|
-| **Creating** | New project, no README yet |
-| **Adding** | Need to document something new |
-| **Updating** | Capabilities changed, content is stale |
-| **Reviewing** | Checking if README is still accurate |
-
-### Project Type Questions
-
-**Creating initial README:**
-1. What type of project? (OSS, Personal, Internal, Config)
-2. What problem does this solve in one sentence?
-3. What's the quickest path to "it works"?
-4. Anything notable to highlight?
-
-**See** `references/section-checklist.md` for which sections to include by type.
-
-## Step 2: Parse GitHub Input
-
-Accept both formats:
+### Step 1: 접수
 
 ```bash
-# From GitHub ID (username or org)
-input: "torvalds"
-input: "facebook"
+# 현재 디렉토리 README 확인
+[ -f README.md ] && cat README.md
 
-# From GitHub URL
-input: "https://github.com/torvalds"
-input: "https://github.com/facebook/react"
+# 프로젝트 정보 수집
+[ -f package.json ] && cat package.json | jq '{name, description, version}'
+[ -f pyproject.toml ] && grep -E "^(name|version|description)" pyproject.toml
 ```
 
-Extract username/org:
+### Step 2: 진단 체크리스트
+
+| 항목 | 진단 기준 |
+|------|-----------|
+| **제목** | 프로젝트 이름이 명확한가? |
+| **설명** | 1-2문장으로 "무엇을, 왜" 설명하는가? |
+| **설치** | 누구든 따라할 수 있는가? |
+| **사용법** | 실행 가능한 예제가 있는가? |
+| **맥락** | 필요한 배경 지식이 제공되는가? |
+| **구조** | 인지적 퍼널링 (넓은 → 좁은)을 따르는가? |
+| **최신성** | 내용이 현재 프로젝트 상태와 일치하는가? |
+
+### Step 3: 처방서 출력
+
+```markdown
+## 진단 결과
+
+### 건강함
+- [x] 설치 섹션 존재
+- [x] 라이선스 명시
+
+### 주의 필요
+- ⚠️ 설명이 너무 김 (3줄 → 1-2줄 권장)
+- ⚠️ 사용 예제 없음
+
+### 치료 필요
+- ❌ 제목에 "프로젝트"만 있음 → 실제 이름으로 변경
+- ❌ 설치 명령어 구식 (npm install → npm i 권장)
+
+## 처방
+
+### 1. 제목 수정
+- 현재: `# 프로젝트`
+- 권장: `# my-awesome-tool`
+
+### 2. 설명 축약
+- 현재: "이 프로젝트는... (3줄)"
+- 권장: "CLI tool for X. One-liner."
+
+### 3. 사용 예제 추가
+\`\`\`bash
+my-tool --input file.txt --output result.json
+\`\`\`
+```
+
+## Mode 2: 레퍼런스 분석
+
+사용자가 제공한 레퍼런스 README에서 스타일을 분석합니다.
+
+### 입력 형태
+
 ```bash
-# URL pattern
-echo "https://github.com/torvalds" | sed 's|.*github.com/||' | cut -d'/' -f1
+# GitHub URL
+"Analyze https://github.com/vercel/next.js/blob/canary/README.md"
 
-# Direct ID
-username="torvalds"
+# 로컬 파일
+"Analyze ~/projects/example/README.md"
+
+# 직접 붙여넣기
+"Analyze this README style: [paste content]"
 ```
 
-## Step 3: Fetch Repositories
+### 분석 항목
 
-Use `gh` CLI to get the user's/org's latest repositories:
+| 카테고리 | 분석 내용 |
+|----------|-----------|
+| **구조** | 섹션 순서, 계층 구조 |
+| **스타일** | 배지, 이모지, 코드 블록 |
+| **톤** | 격식/비격식, 간결/상세 |
+| **포맷** | 테이블, 리스트, 인용구 사용 |
 
-```bash
-# List repos sorted by last updated (for user)
-gh repo list <username> --limit 10 --json name,description,url,updatedAt,stargazerCount --jq 'sort_by(.updatedAt) | reverse | .[0:5]'
-
-# For organization
-gh repo list <orgname> --limit 10 --json name,description,url,updatedAt,stargazerCount --jq 'sort_by(.updatedAt) | reverse | .[0:5]'
-
-# Alternative: API call
-gh api /users/<username>/repos --paginate | jq '[.[] | {name, description, html_url, updated_at, stargazers_count}] | sort_by(.updated_at) | reverse | .[0:5]'
-```
-
-Select repos with:
-- Most recent activity (`updatedAt`)
-- Non-empty README (check via API)
-- Prefer repos with stars (indicates maintained projects)
-
-## Step 4: Read README Content
-
-For each selected repository:
-
-```bash
-# Get README via gh API
-gh api /repos/<owner>/<repo>/readme --jq '.content' | base64 -d
-
-# Alternative: raw URL
-curl -s https://raw.githubusercontent.com/<owner>/<repo>/main/README.md
-curl -s https://raw.githubusercontent.com/<owner>/<repo>/master/README.md
-```
-
-Store each README for pattern analysis. Minimum 3 READMEs required.
-
-## Step 5: Analyze Patterns
-
-### Section Detection
-
-Identify common sections across READMEs:
-
-```
-Typical sections to detect:
-- Title/Header (H1, project name)
-- Description/Badges
-- Installation
-- Usage/Quick Start
-- Features
-- Configuration
-- API Reference
-- Examples/Demo
-- Contributing
-- License
-- Acknowledgments
-- Changelog
-- Screenshots/Demo
-```
-
-Analysis approach:
-1. Parse markdown headers (`#`, `##`, `###`)
-2. Count frequency of each section name
-3. Note section ordering patterns
-4. Identify badge patterns (shields.io, etc.)
-5. Detect code block languages (bash, python, js, etc.)
-
-### Style Detection
-
-Analyze formatting patterns:
-
-```
-Style elements:
-- Badge usage (presence, style, position)
-- Emoji usage in headers/sections
-- Code block formatting (language tags, line numbers)
-- Image usage (screenshots, logos, diagrams)
-- Table usage (for configs, comparisons)
-- List style (bullet vs numbered)
-- Quote usage (highlights, tips)
-- Link style (inline vs reference)
-- TOC (Table of Contents) presence
-- Section divider usage (---, ***)
-```
-
-### Common Patterns Summary
-
-Output analysis as structured data:
+### 분석 결과 예시
 
 ```json
 {
-  "sections": {
-    "Installation": { "frequency": 1.0, "positions": [2, 3, 2] },
-    "Usage": { "frequency": 0.8, "positions": [3, 4, 3] },
-    "License": { "frequency": 0.6, "positions": [6, 7, 5] }
-  },
+  "structure": ["Title", "Badges", "Description", "Features", "Install", "Usage", "Contributing", "License"],
   "styles": {
     "badges": true,
-    "emoji_headers": false,
-    "code_blocks": ["bash", "javascript"],
-    "images": true,
+    "emoji_in_headers": false,
+    "code_blocks": ["bash", "typescript"],
+    "images": false,
     "toc": false
   },
-  "section_order": ["Title", "Description", "Installation", "Usage", "License"]
+  "tone": "professional-concise",
+  "avg_section_length": "short"
 }
 ```
 
-## Step 6: Detect Project Info
+## Mode 3: GitHub 패턴 분석
 
-Auto-detect from current directory:
-
-### Package Managers & Configs
+사용자의 GitHub 리포지토리에서 README 패턴을 추출합니다.
 
 ```bash
-# Node.js (package.json)
-[ -f package.json ] && cat package.json | jq '{name, description, version, author, license, repository, keywords}'
+# 사용자 리포 분석
+gh repo list <username> --limit 10 --json name,url
 
-# Python (pyproject.toml, setup.py)
-[ -f pyproject.toml ] && cat pyproject.toml | grep -E "^(name|version|description|authors)" | head -10
-[ -f setup.py ] && grep -E "(name=|version=|description=|author=)" setup.py | head -10
-
-# Rust (Cargo.toml)
-[ -f Cargo.toml ] && grep -E "^(name|version|description|authors|license)" Cargo.toml
-
-# Go (go.mod)
-[ -f go.mod ] && head -5 go.mod
-
-# Ruby (Gemfile, *.gemspec)
-[ -f *.gemspec ] && grep -E "(name|version|summary|description)" *.gemspec | head -10
-
-# Java (pom.xml, build.gradle)
-[ -f pom.xml ] && grep -E "<(name|description|version)>" pom.xml | head -10
+# README 가져오기
+gh api /repos/<owner>/<repo>/readme --jq '.content' | base64 -d
 ```
 
-### Project Type Detection
+최소 3개 이상의 README에서 공통 패턴 추출.
 
-```bash
-# Detect project type
-if [ -f "package.json" ]; then
-  project_type="node"
-  framework=$(cat package.json | jq -r '.dependencies | keys[] | select(. == "react" or . == "vue" or . == "next" or . == "express")' | head -1)
-elif [ -f "pyproject.toml" ] || [ -f "setup.py" ]; then
-  project_type="python"
-elif [ -f "Cargo.toml" ]; then
-  project_type="rust"
-elif [ -f "go.mod" ]; then
-  project_type="go"
-elif [ -f "pom.xml" ]; then
-  project_type="java"
-else
-  project_type="unknown"
-fi
-```
+## Mode 4: 베스트 프랙티스 체크
 
-### Git Info
+`references/best-practices.md` 기반으로 README 품질 평가.
 
-```bash
-# Get repo info from git remote
-git remote get-url origin 2>/dev/null | sed 's/.*github.com[/:]//' | sed 's/.git$//'
-git log -1 --format='%an' 2>/dev/null  # Last committer as author hint
-```
+### 필수 체크
 
-## Step 7: Generate README Template
+- [ ] 제목 + 1줄 설명
+- [ ] 설치 방법
+- [ ] 사용 예제
+- [ ] 라이선스
 
-Create README.md combining:
+### 권장 체크
 
-1. **Detected patterns** from GitHub analysis
-2. **Project info** from auto-detection
-3. **Placeholder content** for user to fill
+- [ ] 배지 (npm version, license 등)
+- [ ] 기여 가이드
+- [ ] 변경 로그 링크
 
-### Template Structure
+## 레퍼런스 활용
 
-```markdown
-# {project_name}
+사용자가 레퍼런스를 제공하면:
 
-{badges if detected}
-
-{description from package.json or placeholder}
-
-## {Installation heading}
-
-{code block with appropriate package manager}
-
-## {Usage heading}
-
-{example code or placeholder}
-
-{Additional sections based on detected patterns}
-
-## License
-
-{license from package.json or placeholder}
-```
-
-### Language-Specific Install Commands
-
-```bash
-# Node.js
-npm install {project_name}
-yarn add {project_name}
-pnpm add {project_name}
-
-# Python
-pip install {project_name}
-poetry add {project_name}
-
-# Rust
-cargo add {project_name}
-
-# Go
-go get github.com/{owner}/{project_name}
-```
-
-## Output
-
-Write the generated README to the current working directory:
-
-```bash
-# Write to file
-cat > README.md << 'EOF'
-{generated content}
-EOF
-
-echo "✅ README.md created"
-```
-
-## Example Usage
+1. **레퍼런스 분석** → 스타일/구조 추출
+2. **현재 프로젝트 진단** → 문제 파악
+3. **처방** → 레퍼런스 스타일로 개선안 제시
 
 ```
-User: "Create a README based on my GitHub style. My username is octocat."
+User: "Make my README like Vercel's style. Reference: https://github.com/vercel/next.js"
 
 Process:
-1. Fetch repos from github.com/octocat
-2. Get READMEs from latest 5 repos
-3. Analyze: 80% have Installation/Usage sections, badges at top, no emoji
-4. Detect: package.json exists → Node.js project, name: "my-app"
-5. Generate: README.md with detected patterns + project info
-
-Output:
-# my-app
-
-[![npm version](https://badge.fury.io/js/my-app.svg)](https://badge.fury.io/js/my-app)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-
-A brief description of my-app.
-
-## Installation
-
-\`\`\`bash
-npm install my-app
-\`\`\`
-
-## Usage
-
-\`\`\`javascript
-// Example usage
-const myApp = require('my-app');
-\`\`\`
-
-## License
-
-MIT
+1. Fetch Vercel's README
+2. Analyze: badges at top, concise sections, professional tone
+3. Diagnose current README
+4. Prescribe: "Add badges section", "Shorten description to 1 line", "Add Features table"
 ```
 
-## Scripts
+## 템플릿
 
-### analyze_readme_patterns.py
+프로젝트 타입별 템플릿은 `templates/` 폴더 참조:
 
-Located in `scripts/`. Analyzes README content to extract patterns.
+| 템플릿 | 용도 |
+|--------|------|
+| `templates/oss.md` | 오픈소스 |
+| `templates/personal.md` | 개인 프로젝트 |
+| `templates/internal.md` | 내부 툴 |
+| `templates/xdg-config.md` | 설정 파일 |
 
-Usage:
-```bash
-python3 scripts/analyze_readme_patterns.py readme1.md readme2.md readme3.md
+## 참고 문서
+
+| 파일 | 내용 |
+|------|------|
+| `references/best-practices.md` | README 베스트 프랙티스 |
+| `references/section-checklist.md` | 섹션 체크리스트 |
+| `references/templates.md` | 언어별 패턴 |
+
+## 사용 예시
+
+```
+# 진단 요청
+"Fix my README"
+"진단해줘"
+
+# 레퍼런스 기반
+"Make README like this: https://github.com/facebook/react"
+"이 스타일로 바꿔: [README 내용]"
+
+# GitHub 패턴
+"Create README based on my GitHub style"
+"내 GitHub 스타일로 README 만들어"
+
+# 새 프로젝트
+"I need a README for a new CLI tool"
 ```
 
-Returns JSON with detected patterns.
+## 전제 조건
 
-### detect_project_info.py
-
-Located in `scripts/`. Auto-detects project metadata from current directory.
-
-Usage:
-```bash
-python3 scripts/detect_project_info.py
-```
-
-Returns JSON with project info.
-
-## Error Handling
-
-- **No GitHub input**: Prompt user for username/org
-- **Less than 3 repos with READMEs**: Proceed with available, warn user
-- **gh CLI not authenticated**: Guide user through `gh auth login`
-- **Project detection fails**: Use placeholders, inform user
-- **API rate limit**: Suggest waiting or using authenticated requests
-
-## Prerequisites
-
-- `gh` CLI installed and authenticated (`gh auth login`)
-- Python 3.6+ for analysis scripts
-- `jq` for JSON processing (optional but recommended)
-
-## Templates
-
-Ready-to-use templates by project type:
-
-| Template | Use For |
-|----------|---------|
-| `templates/oss.md` | Open source libraries and tools |
-| `templates/personal.md` | Side projects, portfolio pieces |
-| `templates/internal.md` | Team codebases, internal services |
-| `templates/xdg-config.md` | Dotfiles, config directories |
-
-## References
-
-Deeper guidance for edge cases:
-
-| File | Content |
-|------|---------|
-| `references/section-checklist.md` | Which sections by project type |
-| `references/best-practices.md` | Consolidated README wisdom |
-| `references/templates.md` | Language-specific patterns |
-
-## README Checklist
-
-After generating, verify:
-
-- [ ] One-liner explaining purpose (< 120 chars)
-- [ ] Necessary background context & links
-- [ ] Clear, runnable example of usage
-- [ ] Installation instructions
-- [ ] API documentation (if library)
-- [ ] Cognitive funneling (broad → specific)
-- [ ] Caveats mentioned up-front
-- [ ] License
-
-## Common Mistakes to Avoid
-
-- **No install steps** — Never assume setup is obvious
-- **No examples** — Show, don't just tell
-- **Wall of text** — Use headers, tables, lists
-- **Stale content** — Add "last reviewed" date for internal/config
-- **Generic tone** — Write for YOUR audience
+- `gh` CLI (GitHub 패턴 분석용)
+- `jq` (JSON 처리)
+- Python 3.6+ (스크립트 실행 시)
