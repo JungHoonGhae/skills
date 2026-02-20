@@ -5,101 +5,101 @@ description: README diagnosis and treatment. Diagnoses README problems, analyzes
 
 # README Doctor
 
-README 진단과 처방. 문제를 진단하고, 레퍼런스를 분석하고, 개선안을 처방합니다.
+Diagnose README problems, analyze reference styles, and prescribe improvements.
 
-## 진단 프로세스
+## Diagnosis Process
 
 ```
-환자(README) 접수 → 진단 → 처방 → 치료
+Patient (README) Intake → Diagnosis → Prescription → Treatment
 ```
 
-## Mode 1: 진단 & 치료 (기본)
+## Mode 1: Diagnose & Treat (Default)
 
-현재 프로젝트의 README를 진단하고 처방합니다.
+Diagnose current project's README and prescribe improvements.
 
-### Step 1: 접수
+### Step 1: Intake
 
 ```bash
-# 현재 디렉토리 README 확인
+# Check current README
 [ -f README.md ] && cat README.md
 
-# 프로젝트 정보 수집
+# Gather project info
 [ -f package.json ] && cat package.json | jq '{name, description, version}'
 [ -f pyproject.toml ] && grep -E "^(name|version|description)" pyproject.toml
 ```
 
-### Step 2: 진단 체크리스트
+### Step 2: Diagnosis Checklist
 
-| 항목 | 진단 기준 |
-|------|-----------|
-| **제목** | 프로젝트 이름이 명확한가? |
-| **설명** | 1-2문장으로 "무엇을, 왜" 설명하는가? |
-| **설치** | 누구든 따라할 수 있는가? |
-| **사용법** | 실행 가능한 예제가 있는가? |
-| **맥락** | 필요한 배경 지식이 제공되는가? |
-| **구조** | 인지적 퍼널링 (넓은 → 좁은)을 따르는가? |
-| **최신성** | 내용이 현재 프로젝트 상태와 일치하는가? |
+| Item | Diagnosis Criteria |
+|------|-------------------|
+| **Title** | Is the project name clear? |
+| **Description** | Does it explain "what & why" in 1-2 sentences? |
+| **Installation** | Can anyone follow it? |
+| **Usage** | Is there a runnable example? |
+| **Context** | Is necessary background provided? |
+| **Structure** | Does it follow cognitive funneling (broad → specific)? |
+| **Freshness** | Does content match current project state? |
 
-### Step 3: 처방서 출력
+### Step 3: Prescription Output
 
 ```markdown
-## 진단 결과
+## Diagnosis Results
 
-### 건강함
-- [x] 설치 섹션 존재
-- [x] 라이선스 명시
+### Healthy
+- [x] Installation section exists
+- [x] License stated
 
-### 주의 필요
-- ⚠️ 설명이 너무 김 (3줄 → 1-2줄 권장)
-- ⚠️ 사용 예제 없음
+### Needs Attention
+- ⚠️ Description too long (3 lines → 1-2 recommended)
+- ⚠️ No usage example
 
-### 치료 필요
-- ❌ 제목에 "프로젝트"만 있음 → 실제 이름으로 변경
-- ❌ 설치 명령어 구식 (npm install → npm i 권장)
+### Needs Treatment
+- ❌ Title only says "Project" → Change to actual name
+- ❌ Install command outdated (npm install → npm i recommended)
 
-## 처방
+## Prescription
 
-### 1. 제목 수정
-- 현재: `# 프로젝트`
-- 권장: `# my-awesome-tool`
+### 1. Fix Title
+- Current: `# Project`
+- Recommended: `# my-awesome-tool`
 
-### 2. 설명 축약
-- 현재: "이 프로젝트는... (3줄)"
-- 권장: "CLI tool for X. One-liner."
+### 2. Shorten Description
+- Current: "This project is... (3 lines)"
+- Recommended: "CLI tool for X. One-liner."
 
-### 3. 사용 예제 추가
+### 3. Add Usage Example
 \`\`\`bash
 my-tool --input file.txt --output result.json
 \`\`\`
 ```
 
-## Mode 2: 레퍼런스 분석
+## Mode 2: Reference Analysis
 
-사용자가 제공한 레퍼런스 README에서 스타일을 분석합니다.
+Analyze style from user-provided reference READMEs.
 
-### 입력 형태
+### Input Formats
 
 ```bash
 # GitHub URL
 "Analyze https://github.com/vercel/next.js/blob/canary/README.md"
 
-# 로컬 파일
+# Local file
 "Analyze ~/projects/example/README.md"
 
-# 직접 붙여넣기
+# Direct paste
 "Analyze this README style: [paste content]"
 ```
 
-### 분석 항목
+### Analysis Items
 
-| 카테고리 | 분석 내용 |
-|----------|-----------|
-| **구조** | 섹션 순서, 계층 구조 |
-| **스타일** | 배지, 이모지, 코드 블록 |
-| **톤** | 격식/비격식, 간결/상세 |
-| **포맷** | 테이블, 리스트, 인용구 사용 |
+| Category | What to Analyze |
+|----------|-----------------|
+| **Structure** | Section order, hierarchy |
+| **Style** | Badges, emojis, code blocks |
+| **Tone** | Formal/casual, concise/verbose |
+| **Format** | Tables, lists, blockquotes usage |
 
-### 분석 결과 예시
+### Analysis Result Example
 
 ```json
 {
@@ -116,44 +116,44 @@ my-tool --input file.txt --output result.json
 }
 ```
 
-## Mode 3: GitHub 패턴 분석
+## Mode 3: GitHub Pattern Analysis
 
-사용자의 GitHub 리포지토리에서 README 패턴을 추출합니다.
+Extract README patterns from user's GitHub repositories.
 
 ```bash
-# 사용자 리포 분석
+# Analyze user repos
 gh repo list <username> --limit 10 --json name,url
 
-# README 가져오기
+# Fetch README
 gh api /repos/<owner>/<repo>/readme --jq '.content' | base64 -d
 ```
 
-최소 3개 이상의 README에서 공통 패턴 추출.
+Extract common patterns from at least 3 READMEs.
 
-## Mode 4: 베스트 프랙티스 체크
+## Mode 4: Best Practices Check
 
-`references/best-practices.md` 기반으로 README 품질 평가.
+Evaluate README quality based on `references/best-practices.md`.
 
-### 필수 체크
+### Required Checks
 
-- [ ] 제목 + 1줄 설명
-- [ ] 설치 방법
-- [ ] 사용 예제
-- [ ] 라이선스
+- [ ] Title + one-liner description
+- [ ] Installation method
+- [ ] Usage example
+- [ ] License
 
-### 권장 체크
+### Recommended Checks
 
-- [ ] 배지 (npm version, license 등)
-- [ ] 기여 가이드
-- [ ] 변경 로그 링크
+- [ ] Badges (npm version, license, etc.)
+- [ ] Contributing guide
+- [ ] Changelog link
 
-## 레퍼런스 활용
+## Using References
 
-사용자가 레퍼런스를 제공하면:
+When user provides a reference:
 
-1. **레퍼런스 분석** → 스타일/구조 추출
-2. **현재 프로젝트 진단** → 문제 파악
-3. **처방** → 레퍼런스 스타일로 개선안 제시
+1. **Analyze Reference** → Extract style/structure
+2. **Diagnose Current Project** → Identify issues
+3. **Prescribe** → Suggest improvements in reference style
 
 ```
 User: "Make my README like Vercel's style. Reference: https://github.com/vercel/next.js"
@@ -165,46 +165,46 @@ Process:
 4. Prescribe: "Add badges section", "Shorten description to 1 line", "Add Features table"
 ```
 
-## 템플릿
+## Templates
 
-프로젝트 타입별 템플릿은 `templates/` 폴더 참조:
+Project type templates in `templates/` folder:
 
-| 템플릿 | 용도 |
-|--------|------|
-| `templates/oss.md` | 오픈소스 |
-| `templates/personal.md` | 개인 프로젝트 |
-| `templates/internal.md` | 내부 툴 |
-| `templates/xdg-config.md` | 설정 파일 |
+| Template | Use For |
+|----------|---------|
+| `templates/oss.md` | Open source |
+| `templates/personal.md` | Personal projects |
+| `templates/internal.md` | Internal tools |
+| `templates/xdg-config.md` | Config files |
 
-## 참고 문서
+## References
 
-| 파일 | 내용 |
-|------|------|
-| `references/best-practices.md` | README 베스트 프랙티스 |
-| `references/section-checklist.md` | 섹션 체크리스트 |
-| `references/templates.md` | 언어별 패턴 |
+| File | Content |
+|------|---------|
+| `references/best-practices.md` | README best practices |
+| `references/section-checklist.md` | Section checklist |
+| `references/templates.md` | Language-specific patterns |
 
-## 사용 예시
+## Usage Examples
 
 ```
-# 진단 요청
+# Diagnosis request
 "Fix my README"
-"진단해줘"
+"Diagnose this README"
 
-# 레퍼런스 기반
+# Reference-based
 "Make README like this: https://github.com/facebook/react"
-"이 스타일로 바꿔: [README 내용]"
+"Change to this style: [README content]"
 
-# GitHub 패턴
+# GitHub pattern
 "Create README based on my GitHub style"
-"내 GitHub 스타일로 README 만들어"
+"Make README matching my other projects"
 
-# 새 프로젝트
+# New project
 "I need a README for a new CLI tool"
 ```
 
-## 전제 조건
+## Prerequisites
 
-- `gh` CLI (GitHub 패턴 분석용)
-- `jq` (JSON 처리)
-- Python 3.6+ (스크립트 실행 시)
+- `gh` CLI (for GitHub pattern analysis)
+- `jq` (for JSON processing)
+- Python 3.6+ (for running scripts)
