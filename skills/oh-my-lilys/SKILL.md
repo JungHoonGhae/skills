@@ -1,8 +1,8 @@
 ---
 name: oh-my-lilys
 description: CLI tool for lilys.ai - Summarize YouTube, PDF, websites, and audio. Use when user wants to summarize content from URLs, manage digest sessions, or generate AI reports.
-version: 1.0.0-beta.2
-compatibility: npm, pnpm, or bun for global installation
+version: 1.1.0
+compatibility: npm, pnpm, or bun for global installation. Requires playwright-cli for auto-auth.
 ---
 
 # oh-my-lilys
@@ -19,18 +19,22 @@ pnpm add -g oh-my-lilys
 bun add -g oh-my-lilys
 ```
 
+### Prerequisites for Auto-Auth
+
+For automatic token retrieval, install playwright-cli:
+
+```bash
+npm install -g playwright-cli
+```
+
 ## Usage
 
 ```bash
-# Authenticate
-lilys auth <token>
+# Authenticate (auto-detect from browser)
+lilys auth
 
-# Get token manually:
-# 1. Open https://lilys.ai in your browser
-# 2. Log in with Google
-# 3. Open DevTools (F12) → Application → Local Storage
-# 4. Copy the 'access_token' value
-# 5. Run: lilys auth <token>
+# Or manually with token
+lilys auth <token>
 
 # Check status
 lilys whoami
@@ -54,9 +58,36 @@ lilys doctor
 lilys upgrade
 ```
 
+## Authentication
+
+### Automatic (Recommended)
+
+```bash
+lilys auth
+```
+
+This will:
+1. Check if you're already logged in at lilys.ai
+2. If logged in, automatically extract the token from browser
+3. If not logged in, open a browser for you to login with Google
+4. Save the token for future use
+
+The browser profile is stored at ~/.lilys-chrome-profile.
+
+### Manual
+
+```bash
+# Get token manually:
+# 1. Open https://lilys.ai in your browser
+# 2. Log in with Google
+# 3. Open DevTools (F12) → Application → Local Storage
+# 4. Copy the 'access_token' value
+# 5. Run: lilys auth <token>
+```
+
 ## Commands
 
-- **auth** - Authenticate with lilys.ai (Google available, Naver/Email coming soon)
+- **auth** - Authenticate with lilys.ai (auto or manual token)
 - **summarize** - Summarize a URL (YouTube, PDF, audio, website)
 - **sessions** - List your digest sessions
 - **report** - Get report for a session
