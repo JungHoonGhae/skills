@@ -1,7 +1,6 @@
 ---
 name: oh-my-lilys
 description: CLI tool for lilys.ai - Summarize YouTube, PDF, websites, and audio. Use when user wants to: (1) Summarize content from URLs, (2) List digest sessions, (3) Generate/fetch AI reports with different note types, (4) Manage authentication. Triggers: "summarize URL", "generate report", "get sessions", "lilys", "YouTube summary".
-compatibility: npm, pnpm, or bun for global installation. Requires playwright-cli for auto-auth.
 ---
 
 # oh-my-lilys
