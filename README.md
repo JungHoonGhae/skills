@@ -27,6 +27,7 @@ If these skills help you, consider supporting their maintenance:
 | **[readme-doctor](skills/readme-doctor/)** | Diagnose README problems and prescribe improvements | "fix my README", "analyze this README", "make README like [reference]" | [![readme-doctor](https://skills-badge.vercel.app/badge/JungHoonGhae/skills/readme-doctor?style=flat-square)](https://skills.sh/JungHoonGhae/skills/readme-doctor) |
 | **[oh-my-lilys](skills/oh-my-lilys/)** | Summarize YouTube, PDF, websites, and audio via lilys.ai CLI | "summarize URL", "generate report", "summarize video" | [![oh-my-lilys](https://skills-badge.vercel.app/badge/JungHoonGhae/skills/oh-my-lilys?style=flat-square)](https://skills.sh/JungHoonGhae/skills/oh-my-lilys) |
 | **[discord-admin-py](skills/discord-admin-py/)** | Discord server administration via inference.sh | Discord bot, channel management, role assignment | [![discord-admin-py](https://skills-badge.vercel.app/badge/JungHoonGhae/skills/discord-admin-py?style=flat-square)](https://skills.sh/JungHoonGhae/skills/discord-admin-py) |
+| **[openkakao-cli](skills/openkakao-cli/)** | OpenKakao CLI workflow for auth, chats, reads, and read-only automation | "openkakao", "openkakao-rs", "kakao chat CLI", "-950 token" | [![openkakao-cli](https://skills-badge.vercel.app/badge/JungHoonGhae/skills/openkakao-cli?style=flat-square)](https://skills.sh/JungHoonGhae/skills/openkakao-cli) |
 
 ## Installation
 
@@ -44,6 +45,7 @@ npx skills add JungHoonGhae/skills@ships-with-steipete
 npx skills add JungHoonGhae/skills@readme-doctor
 npx skills add JungHoonGhae/skills@oh-my-lilys
 npx skills add JungHoonGhae/skills@discord-admin-py
+npx skills add JungHoonGhae/skills@openkakao-cli
 ```
 
 ### Manual Installation
