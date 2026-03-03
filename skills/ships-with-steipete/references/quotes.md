@@ -321,3 +321,113 @@ model_auto_compact_token_limit = 233000
 - "My go-to model is gpt-5.2-codex high"
 - "There's very little benefit to xhigh other than it being far slower"
 - "KISS - I don't wanna spend time thinking about different modes or 'ultrathink'"
+
+---
+
+## Prompting Philosophy
+
+- "Those long websites about prompting are all bullshit"
+- "Explain from multiple angles, ramble naturally"
+- "Redundancy helps - explain the same thing 3 ways"
+- "Simply talking to the machine and giving clear instructions outperforms elaborate pre-written prompts"
+- "As I work more with agents, I tend to slow down, ask it to plan, present options, ultrathink, and then pick the best one. And always using a fresh context. Much better results"
+- "Prompts are code" (quoting Mario Zechner)
+
+---
+
+## Context Management
+
+- "Less is more. The more you allocate into the context window of an LLM... the worse the outcomes you're going to get"
+- "The proliferation of MCP servers is creating a tragedy of the commons in your context window"
+- "Keep the agent context clean"
+- "Claude performs best when it has a clear target to iterate against: a visual mock, a test case, or another kind of output"
+
+---
+
+## TUI / Terminal Philosophy (Dec 2025)
+
+- "For coding agents, I want the terminal's built-ins to stay native"
+- "Claude Code and pi prove you can kill flicker without giving up the terminal's muscle memory"
+- "It's 2025. We can have smooth rendering and keep the terminal's superpowers"
+
+---
+
+## Addiction & Sustainability
+
+- "AI was supposed to save time, yet I work more than ever before"
+- "One week in AI feels like a month in the real world"
+- "I'm on a new journey how to better control my slot machine addiction"
+- "The Black Eye Club" (friends texting at 4am working with AI)
+- "If you don't like the outcome, just try it again" (non-determinism as feature)
+
+---
+
+## AI Costs
+
+- "Time is the only non-refillable resource. Claude Max at $200 is currently the cheapest way I know to mint extra hours"
+- "The productivity multiplier is so absurd that arguing about the cost is like complaining about the price of coffee while billing $200/hour"
+- "Token prices have dropped 1000x in the last two years"
+- "Self-hosting isn't worth it economically, but it's great to know it's possible"
+- "Running this setup costs $15/h per hour... Simple answer: No."
+
+---
+
+## AI & Writing
+
+- "Agents are just another tool"
+- "Judge the value of writing on its own merits"
+- "At what point does it matter if I spend 4 hours prompting an agent to craft my thoughts into a post vs writing it manually?"
+
+---
+
+## Build Speed & Agent Workflow
+
+- "Three days. One person. Six AI assistants. The future is weird." (Vibe Meter)
+- "What would have been a week-long project compressed into hours" (VibeTunnel)
+- "20x is not an understatement in terms of how much faster we are with agents"
+- "It's not about getting perfect code; it's about getting *something* that works, then iterating rapidly"
+- "The second 90% of finishing an app always takes longer than the first 90%"
+- "In agentic engineering, loop iteration speed is everything"
+- "English is the new programming language"
+- "The best tools are invisible until you need them, then indispensable once you have them"
+- "What seemed like a limitation [300-line file constraint] became a forcing function for good design"
+
+---
+
+## Career & Industry
+
+- "Either you have to embrace the AI, or you get out of your career"
+- "Maybe we become less code producers and more code enablers. My next title might be Creative Director of Code"
+- "All code is technical debt"
+- "AI makes time very, very, very cheap"
+- "Why do I need planet-scale infrastructure to share baby photos with, like, 5 people?"
+- "Does it defy the laws of physics? No? Then it can be done"
+- "If you don't stop this video and start experimenting Claude Code, it's your fault"
+- "You don't have to be the best, just use those tools"
+
+---
+
+## Codebase Understanding (Jun 2025)
+
+- "Whenever I want to understand a new codebase, the absolute best way I found is using agents"
+- "The code **is** the spec"
+- repo2txt -> drag into Google AI Studio -> ask questions -> generate spec -> "Build spec.md"
+
+---
+
+## Testing & Quality
+
+- "Agents need railguards: tests grow more important, not less"
+- "Agents need thinking: planning before implementation"
+- "AI agents love writing tests; comprehensive test suites caught bugs never would have thought to test for"
+- "One trick to get better results: use thinking triggers, with ultrathink being the boss"
+
+---
+
+## Git & Version Control Workflow
+
+- "Yes, you can just do things. That's the beauty and the problem"
+- "Work on main, commit surgically"
+- "Atomic commits on main (counterintuitively safer + faster)"
+- "No PR workflows for small teams"
+- "CLIs beat MCPs"
