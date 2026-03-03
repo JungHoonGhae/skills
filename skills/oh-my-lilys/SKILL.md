@@ -1,6 +1,6 @@
 ---
-name: oh-my-lilys
-description: CLI tool for lilys.ai - Summarize YouTube, PDF, websites, and audio. Manage sessions, generate reports, search, export, and organize collections directly from the terminal. Use when user wants to: (1) Summarize content from URLs, (2) List/search/delete sessions, (3) Generate or fetch AI reports with note types, (4) Export reports as PDF or Markdown, (5) Manage collections, (6) Share sessions publicly, (7) Check usage/quota, (8) Authenticate with lilys.ai. Triggers: "summarize URL", "generate report", "get sessions", "lilys", "YouTube summary", "search sessions", "export PDF", "collections".
+name: "oh-my-lilys"
+description: "CLI tool for lilys.ai - Summarize YouTube, PDF, websites, and audio. Manage sessions, generate reports, search, export, and organize collections directly from the terminal. Use when user wants to summarize content from URLs, list/search/delete sessions, generate or fetch AI reports with note types, export reports as PDF or Markdown, manage collections, share sessions publicly, check usage/quota, or authenticate with lilys.ai. Triggers: summarize URL, generate report, get sessions, lilys, YouTube summary, search sessions, export PDF, collections."
 ---
 
 # oh-my-lilys
