@@ -197,6 +197,54 @@ The dependency order matters because `--context` resolves search terms at creati
      -p "Contact Information=**Phone**: 555-0100\n**Email**: info@acme.com"
    ```
 
+### Enriching organization notes from external data
+
+When syncing information from emails, CRM, or other sources into an Organization's notes:
+
+1. **Gather data** from external source (emails, project files, etc.)
+2. **Update notes** with structured markdown — contacts, activity timeline, pending items:
+   ```bash
+   capx update <org-id> -b "$(cat <<'EOF'
+   ## Contacts
+   | Name | Role | Email |
+   |------|------|-------|
+   | Jane Doe | CEO | jane@acme.com |
+   | John Smith | CTO | john@acme.com |
+
+   ## Recent Activity
+   - **2026-03**: SSL certificate renewed
+   - **2026-02**: API credentials migrated
+
+   ## Pending Items
+   - Contract renewal due Q2
+   EOF
+   )"
+   ```
+
+Note: `-b` replaces the entire notes body. To preserve existing notes, read first with `capx get <id>` and merge content.
+
+### Bulk updating tasks
+
+When updating multiple tasks (e.g., reconciling statuses from email evidence), run updates in parallel for efficiency:
+
+```bash
+# Update statuses in parallel
+capx update <id1> -p status=done &
+capx update <id2> -p status=done &
+capx update <id3> -p status=in-progress &
+wait
+```
+
+Or from a script, loop through IDs:
+
+```bash
+for id in <id1> <id2> <id3>; do
+  capx update "$id" -p status=done
+done
+```
+
+**Important**: Only pass the properties you intend to change. Extra `-p` flags overwrite existing values — omitting a property leaves it unchanged.
+
 ### Daily notes
 
 ```bash
@@ -230,3 +278,10 @@ EOF
 - Use heredoc `$(cat <<'EOF' ... EOF)` for multi-line body content
 - Batch operations: pass multiple IDs to `get` for efficient retrieval
 - All commands support `--json` for scripting and piping
+
+## Gotchas
+
+- **`get` with multiple task IDs may fail**: `capx get <id1> <id2>` can return "No objects found" for RootTask entities. Workaround: get tasks individually with `capx get <id> --raw`.
+- **Empty status arrays**: Some tasks have `"status": {"val": []}` (no status set) in raw output. Handle this in scripts with fallback defaults.
+- **`-p date=` sets date resolution to day**: When setting task dates, use ISO format (`2026-03-15`). Omitting `-p date=` on update leaves the existing date unchanged.
+- **`-b` replaces entire notes**: The body flag overwrites all existing notes/blocks content. There is no append mode — read existing content first if you need to merge.
