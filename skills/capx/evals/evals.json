@@ -1,0 +1,23 @@
+{
+  "skill_name": "capx",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I just had a meeting with a new client called 'Northwind Traders'. They're a food distribution company. The CEO is David Park and our contact there is Sarah Kim from their IT team. Can you set this up in my Capacities?",
+      "expected_output": "Creates Organization 'Northwind Traders' with Relation=Client, Category=Company. Creates Person 'David Park' (CEO) and 'Sarah Kim' (IT team contact). Links CEO and Employee to the organization. Searches web for company info to fill details.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "I need to check all my tasks related to the 'Website Redesign' project and archive the ones that are already done. Can you handle that?",
+      "expected_output": "Searches for 'Website Redesign' related tasks, gets raw details to check status, identifies done tasks, and archives them by updating status to 'archived'. Reports what was archived.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "Log this to my daily note: Had a productive sprint planning session. Key decisions: 1) Moving to weekly releases starting next month, 2) Prioritizing the mobile app redesign, 3) Hiring 2 more frontend devs. Next planning session is March 20.",
+      "expected_output": "Uses 'cap daily' with properly formatted markdown body containing the meeting notes structured with headings and bullet points.",
+      "files": []
+    }
+  ]
+}
