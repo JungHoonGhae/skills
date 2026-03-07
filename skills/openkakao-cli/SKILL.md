@@ -82,6 +82,19 @@ LOCO commands automatically refresh tokens via login.json + X-VC when needed.
 - Cache `chat_id`s you use often; avoid running `loco-chats --all` repeatedly.
 - Use `-y/--yes` for non-interactive sends when you're confident the `chat_id` is correct.
 
+## Multiline (줄바꿈) 메시지 보내기
+
+주의: 커맨드라인에서 `\n`을 그냥 쓰면 **줄바꿈이 아니라 문자 그대로** `\n`이 전송될 수 있음. 실제 개행 문자를 만들어서 인자로 넘겨야 함.
+
+예시:
+
+- bash/zsh:
+  - `openkakao-rs send -y <chat_id> "$(printf '첫줄\n\n둘째줄')"`
+- bash 전용($'' quoting):
+  - `openkakao-rs send -y <chat_id> $'첫줄\n\n둘째줄'`
+- fish:
+  - `openkakao-rs send -y <chat_id> (printf '첫줄\n\n둘째줄')`
+
 ## Troubleshooting
 
 ### Token invalid or `-950` error
