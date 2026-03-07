@@ -101,6 +101,7 @@ brew install JungHoonGhae/openkakao/openkakao-rs
 
 ## Guardrails
 
+- **Message prefix**: Always prepend `[openkakao-rs]` to every outgoing message for traceability. Example: `openkakao-rs send <id> "[openkakao-rs] your message" -y`
 - Do not expose personal chat content unless the user explicitly asks.
 - Prefer summary/aggregation output for logs and reports.
 - Message sending (`send`) is functional — confirm chat_id before sending.
