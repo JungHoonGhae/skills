@@ -38,7 +38,7 @@ openkakao-rs members <id>          # List chat room members
 
 ```bash
 openkakao-rs loco-test                          # Test full LOCO connection
-openkakao-rs send <chat_id> <message>           # Send text message via LOCO WRITE
+openkakao-rs send <chat_id> <message> [-y]        # Send text message via LOCO WRITE (add -y to skip prompt)
 openkakao-rs send-photo <chat_id> <file> [-y]  # Send photo (JPEG/PNG/GIF) via LOCO SHIP+POST
 openkakao-rs send-file <chat_id> <file> [-y]   # Send any file (photo/video/doc) via LOCO
 openkakao-rs watch [--chat-id ID] [--raw]       # Watch real-time incoming messages
@@ -55,7 +55,7 @@ openkakao-rs loco-chatinfo <chat_id>            # Raw chat room info
 
 ### LOCO vs REST for messages
 
-- **REST** (`messages`): Uses Pilsner cache — only returns messages for recently opened chats in the KakaoTalk app. Most chats return empty.
+- **REST** (`read`): Uses Pilsner cache — only returns messages for recently opened chats in the KakaoTalk app. Many chats return empty.
 - **LOCO** (`loco-read`): Uses SYNCMSG protocol — returns all server-retained messages. Preferred for full history access.
 
 ## Token Management
@@ -68,14 +68,19 @@ openkakao-rs watch-cache [--interval N] # Poll Cache.db for fresh tokens
 
 LOCO commands automatically refresh tokens via login.json + X-VC when needed.
 
-## Workflow
+## Workflow (LOCO-first)
 
-1. Verify binary and token: `openkakao-rs --version && openkakao-rs auth`
-2. If token invalid: open KakaoTalk app, then `openkakao-rs login --save`
-3. Get chat IDs: `openkakao-rs loco-chats` (or `chats` for REST)
-4. Read messages: `openkakao-rs loco-read <chat_id> --all` (full history)
-5. Send message: `openkakao-rs send <chat_id> "message text"`
-6. Watch real-time: `openkakao-rs watch`
+1. Quick sanity: `openkakao-rs --version && openkakao-rs loco-test`
+2. Get chat IDs: `openkakao-rs loco-chats --all --json` *(note: `--all` can be slower)*
+3. Send message: `openkakao-rs send -y <chat_id> "message text"` *(default prefix on; add `--no-prefix` to disable)*
+4. Read messages: `openkakao-rs loco-read <chat_id> -n 50` (or `--all`)
+5. Only when you need REST-only features: open KakaoTalk app → `openkakao-rs login --save` → `openkakao-rs auth`
+
+## Speed tips
+
+- Prefer **LOCO** for send/read/history — REST token expiry + `login --save` can block waiting on Cache.db.
+- Cache `chat_id`s you use often; avoid running `loco-chats --all` repeatedly.
+- Use `-y/--yes` for non-interactive sends when you're confident the `chat_id` is correct.
 
 ## Troubleshooting
 
@@ -89,9 +94,17 @@ openkakao-rs auth
 
 LOCO commands auto-refresh tokens, so `-950` is usually handled automatically.
 
+### `login --save` seems to hang
+
+`login --save` may wait until KakaoTalk updates Cache.db.
+
+- Open KakaoTalk → open the chat list once (forces a cache refresh)
+- (Optional) `openkakao-rs watch-cache --interval 2` to see when tokens change
+- Or skip REST entirely and use LOCO (`loco-test` / `send` / `loco-read`).
+
 ### GETMSGS returns `-300`
 
-This is expected on Mac (dtype=2). Use `loco-read` (SYNCMSG) instead of `messages` (GETMSGS).
+This is expected on Mac (dtype=2). Use `loco-read` (SYNCMSG) instead of REST `read` (GETMSGS).
 
 ### Homebrew formula not found
 
@@ -103,7 +116,9 @@ brew install JungHoonGhae/openkakao/openkakao-rs
 
 ## Guardrails
 
-- **Message prefix**: Always prepend `🤖 [openkakao] ` to every outgoing message for traceability and project visibility. Example: `openkakao-rs send -y <id> "🤖 [openkakao] your message"`
+- **Prefix/traceability**: By default, `openkakao-rs` prepends `🤖 [Sent via openkakao]` to outgoing messages. Use `--no-prefix` to disable it.
+  - If you want a custom tag (e.g. `🤖 [openkakao]`), either add it *in the message text* (and keep default prefix), or disable the default prefix and add your own — avoid double-prefixing unless you want it.
+- Use `-y/--yes` only when you are sure the `chat_id` is correct.
+- Avoid `--force` unless you know what you're doing (higher ban risk).
 - Do not expose personal chat content unless the user explicitly asks.
 - Prefer summary/aggregation output for logs and reports.
-- Message sending (`send`) is functional — confirm chat_id before sending.
