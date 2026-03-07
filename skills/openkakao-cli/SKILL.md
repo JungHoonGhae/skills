@@ -40,6 +40,10 @@ openkakao-rs members <id>          # List chat room members
 openkakao-rs loco-test                          # Test full LOCO connection
 openkakao-rs send <chat_id> <message>           # Send message via LOCO WRITE
 openkakao-rs watch [--chat-id ID] [--raw]       # Watch real-time incoming messages
+openkakao-rs watch --read-receipt               # Watch + send read receipts (NOTIREAD)
+openkakao-rs watch --max-reconnect 10           # Auto-reconnect on disconnect (default 5)
+openkakao-rs watch --download-media             # Auto-download media attachments
+openkakao-rs download <chat_id> <log_id> [-o D] # Download media from a specific message
 openkakao-rs loco-chats [--all]                 # List all chat rooms
 openkakao-rs loco-read <chat_id> [-n N] [--all] # Read message history (SYNCMSG)
 openkakao-rs loco-read <chat_id> --all --json   # JSON output
