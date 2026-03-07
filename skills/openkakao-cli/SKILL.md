@@ -40,6 +40,7 @@ openkakao-rs members <id>          # List chat room members
 openkakao-rs loco-test                          # Test full LOCO connection
 openkakao-rs send <chat_id> <message>           # Send text message via LOCO WRITE
 openkakao-rs send-photo <chat_id> <file> [-y]  # Send photo (JPEG/PNG/GIF) via LOCO SHIP+POST
+openkakao-rs send-file <chat_id> <file> [-y]   # Send any file (photo/video/doc) via LOCO
 openkakao-rs watch [--chat-id ID] [--raw]       # Watch real-time incoming messages
 openkakao-rs watch --read-receipt               # Watch + send read receipts (NOTIREAD)
 openkakao-rs watch --max-reconnect 10           # Auto-reconnect on disconnect (default 5)
