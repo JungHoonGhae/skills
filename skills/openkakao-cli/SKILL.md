@@ -30,7 +30,7 @@ openkakao-rs me                    # Show your profile
 openkakao-rs friends [-f] [-s q]   # List friends (favorites/search)
 openkakao-rs settings              # Show account settings
 openkakao-rs chats                 # List chat rooms (Pilsner REST API)
-openkakao-rs messages <id> [-n N]  # Read messages (Pilsner, limited cache)
+openkakao-rs read <id> [-n N] [--all] # Read messages (Pilsner, limited cache)
 openkakao-rs members <id>          # List chat room members
 ```
 
@@ -63,7 +63,7 @@ openkakao-rs loco-chatinfo <chat_id>            # Raw chat room info
 ```bash
 openkakao-rs relogin [--fresh-xvc]    # Refresh token via login.json + X-VC
 openkakao-rs renew                     # Attempt token renewal via refresh_token
-openkakao-rs watch-token [--interval N] # Poll Cache.db for fresh tokens
+openkakao-rs watch-cache [--interval N] # Poll Cache.db for fresh tokens
 ```
 
 LOCO commands automatically refresh tokens via login.json + X-VC when needed.
@@ -103,7 +103,7 @@ brew install JungHoonGhae/openkakao/openkakao-rs
 
 ## Guardrails
 
-- **Message prefix**: Always prepend `🤖 [openkakao] ` to every outgoing message for traceability and project visibility. Example: `openkakao-rs send <id> "🤖 [openkakao] your message" -y`
+- **Message prefix**: Always prepend `🤖 [openkakao] ` to every outgoing message for traceability and project visibility. Example: `openkakao-rs send -y <id> "🤖 [openkakao] your message"`
 - Do not expose personal chat content unless the user explicitly asks.
 - Prefer summary/aggregation output for logs and reports.
 - Message sending (`send`) is functional — confirm chat_id before sending.
