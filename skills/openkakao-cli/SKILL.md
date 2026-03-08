@@ -1,17 +1,19 @@
 ---
 name: openkakao-cli
-description: Work with OpenKakao CLI (`openkakao-rs`) for KakaoTalk on macOS. Use when user asks to authenticate, list chats, read messages (REST or LOCO), send messages, watch real-time messages, inspect friends/members/profile/settings, manage tokens, or build automation from chat data.
+description: Work with OpenKakao CLI (`openkakao-rs`) for KakaoTalk on macOS. Use whenever the user asks to authenticate, inspect chats, read messages, send messages, watch real-time traffic, automate from chat data, build hooks or webhooks, verify webhook signing, manage tokens, inspect auth recovery state, or operate unattended KakaoTalk workflows from the terminal. This should also trigger when the user mentions `watch`, `hook`, `webhook`, `LOCO`, `chat_id`, `auth-status`, `doctor`, `launchd`, or wants to wire OpenKakao into local scripts, agents, SQLite, cron, or launchd.
 ---
 
 # OpenKakao CLI
 
-`openkakao-rs` — KakaoTalk CLI client with REST API and LOCO protocol support.
+`openkakao-rs` is a KakaoTalk CLI with REST and LOCO support. Prefer LOCO commands for full history, sending, and real-time behavior. Prefer local-first automation unless the user explicitly wants events to leave the machine.
 
 ## Quick checks
 
 ```bash
 openkakao-rs --version
 openkakao-rs auth
+openkakao-rs auth-status
+openkakao-rs doctor
 ```
 
 If Homebrew install is needed:
@@ -19,6 +21,27 @@ If Homebrew install is needed:
 ```bash
 brew tap JungHoonGhae/openkakao
 brew install JungHoonGhae/openkakao/openkakao-rs
+```
+
+If the user seems to have an older binary than the repo docs or source imply, check:
+
+```bash
+which openkakao-rs
+openkakao-rs --version
+openkakao-rs send --help
+openkakao-rs watch --help
+```
+
+Persistent operator policy can live in:
+
+```bash
+~/.config/openkakao/config.toml
+```
+
+Persisted runtime state now also lives in:
+
+```bash
+~/.config/openkakao/state.json
 ```
 
 ## REST API Commands (read-only, cached token)
@@ -64,9 +87,11 @@ openkakao-rs loco-chatinfo <chat_id>            # Raw chat room info
 openkakao-rs relogin [--fresh-xvc]    # Refresh token via login.json + X-VC
 openkakao-rs renew                     # Attempt token renewal via refresh_token
 openkakao-rs watch-cache [--interval N] # Poll Cache.db for fresh tokens
+openkakao-rs auth-status               # Show persisted auth recovery state and cooldowns
+openkakao-rs doctor [--loco]           # Environment, token, recovery, and safety diagnostics
 ```
 
-LOCO commands automatically refresh tokens via login.json + X-VC when needed.
+LOCO commands automatically refresh tokens via login.json + X-VC when needed, and REST/LOCO now share the same persisted recovery state.
 
 ## Workflow (LOCO-first)
 
@@ -75,6 +100,82 @@ LOCO commands automatically refresh tokens via login.json + X-VC when needed.
 3. Send message: `openkakao-rs send -y <chat_id> "message text"` *(default prefix on; add `--no-prefix` to disable)*
 4. Read messages: `openkakao-rs loco-read <chat_id> -n 50` (or `--all`)
 5. Only when you need REST-only features: open KakaoTalk app → `openkakao-rs login --save` → `openkakao-rs auth`
+
+## Watch automation workflow
+
+Use this order:
+
+1. Confirm `watch` behavior first: `openkakao-rs watch --help`
+2. Start local-only with `--hook-cmd`
+3. Add filters:
+   - `--hook-chat-id`
+   - `--hook-keyword`
+   - `--hook-type`
+4. Only then move to `--webhook-url` if the user explicitly wants external delivery
+5. If using a webhook, prefer `--webhook-signing-secret` and tell the user to verify:
+   - `X-OpenKakao-Timestamp`
+   - `X-OpenKakao-Signature`
+
+Local-first example:
+
+```bash
+openkakao-rs watch \
+  --hook-cmd 'jq . > /tmp/openkakao-event.json' \
+  --hook-chat-id 382416827148557 \
+  --hook-type 1
+```
+
+Webhook example:
+
+```bash
+openkakao-rs watch \
+  --webhook-url https://hooks.example.com/openkakao \
+  --webhook-header 'Authorization: Bearer token' \
+  --webhook-signing-secret 'super-secret' \
+  --hook-keyword urgent
+```
+
+## Unattended and policy gates
+
+OpenKakao separates:
+
+- `--unattended`: declare non-interactive operation
+- `--allow-non-interactive-send`: allow `send -y`, `send-file -y`, `send-photo -y`
+- `--allow-watch-side-effects`: allow `watch --read-receipt`, `--hook-cmd`, `--webhook-url`
+
+Recommended persistent config:
+
+```toml
+[mode]
+unattended = true
+
+[send]
+allow_non_interactive = true
+default_prefix = true
+
+[watch]
+allow_side_effects = true
+default_max_reconnect = 10
+
+[auth]
+prefer_relogin = true
+auto_renew = true
+
+[safety]
+min_unattended_send_interval_secs = 10
+min_hook_interval_secs = 2
+min_webhook_interval_secs = 2
+hook_timeout_secs = 20
+webhook_timeout_secs = 10
+allow_insecure_webhooks = false
+```
+
+Interpretation:
+
+- unattended sends are rate-limited by default
+- local hooks are rate-limited and timed out
+- webhooks are rate-limited, timed out, and default to HTTPS only unless localhost
+- `auth-status` and `doctor` are the first checks before assuming a long-running job is healthy
 
 ## Speed tips
 
@@ -103,9 +204,22 @@ LOCO commands automatically refresh tokens via login.json + X-VC when needed.
 # Open KakaoTalk app first, then:
 openkakao-rs login --save
 openkakao-rs auth
+openkakao-rs auth-status
 ```
 
 LOCO commands auto-refresh tokens, so `-950` is usually handled automatically.
+
+If the machine has been running unattended for a while, inspect:
+
+- `openkakao-rs auth-status --json`
+- `openkakao-rs doctor --loco`
+
+Look for:
+
+- `last_failure_kind`
+- `consecutive_failures`
+- `auth_cooldown_remaining_secs`
+- `last_recovery_source`
 
 ### `login --save` seems to hang
 
@@ -132,6 +246,13 @@ brew install JungHoonGhae/openkakao/openkakao-rs
 - **Prefix/traceability**: By default, `openkakao-rs` prepends `🤖 [Sent via openkakao]` to outgoing messages. Use `--no-prefix` to disable it.
   - If you want a custom tag (e.g. `🤖 [openkakao]`), either add it *in the message text* (and keep default prefix), or disable the default prefix and add your own — avoid double-prefixing unless you want it.
 - Use `-y/--yes` only when you are sure the `chat_id` is correct.
+- Do not assume unattended send can burst freely; the CLI now rate-limits it by default.
 - Avoid `--force` unless you know what you're doing (higher ban risk).
+- Prefer `watch --hook-cmd` over webhooks when the task can stay on the same machine.
+- If using `--webhook-url`, be explicit that chat content leaves the local trust boundary.
+- Expect non-HTTPS remote webhooks to be blocked unless the user has explicitly loosened `safety.allow_insecure_webhooks`.
+- Treat `watch` hooks/webhooks as best-effort delivery, not a durable queue or exactly-once event bus.
+- Treat unattended mode as a policy decision. If the user is building a service, push them toward `config.toml` instead of repeating long flag strings.
+- For macOS services, steer users toward `examples/launchd/` in the repo instead of ad-hoc LaunchAgent files.
 - Do not expose personal chat content unless the user explicitly asks.
 - Prefer summary/aggregation output for logs and reports.
