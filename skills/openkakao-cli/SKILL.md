@@ -1,6 +1,6 @@
 ---
 name: openkakao-cli
-description: Work with OpenKakao CLI (`openkakao-rs`) for KakaoTalk on macOS. Use whenever the user asks to authenticate, inspect chats, read messages, send messages, watch real-time traffic, automate from chat data, build hooks or webhooks, verify webhook signing, manage tokens, inspect auth recovery state, or operate unattended KakaoTalk workflows from the terminal. This should also trigger when the user mentions `watch`, `hook`, `webhook`, `LOCO`, `chat_id`, `auth-status`, `doctor`, `launchd`, or wants to wire OpenKakao into local scripts, agents, SQLite, cron, or launchd.
+description: Work with OpenKakao CLI (`openkakao-rs`) for KakaoTalk on macOS. Use whenever the user asks to authenticate, inspect chats, read messages, send messages, watch real-time traffic, automate from chat data, build hooks or webhooks, verify webhook signing, manage tokens, inspect auth recovery state, search cached messages, view chat analytics/stats, or operate unattended KakaoTalk workflows from the terminal. This should also trigger when the user mentions `watch`, `hook`, `webhook`, `LOCO`, `chat_id`, `auth-status`, `doctor`, `launchd`, `cache`, `stats`, `analytics`, or wants to wire OpenKakao into local scripts, agents, SQLite, cron, or launchd.
 ---
 
 # OpenKakao CLI
@@ -62,18 +62,39 @@ openkakao-rs members <id>          # List chat room members
 ```bash
 openkakao-rs loco-test                          # Test full LOCO connection
 openkakao-rs send <chat_id> <message> [-y]        # Send text message via LOCO WRITE (add -y to skip prompt)
+openkakao-rs send <chat_id> <message> -y --json   # Send and get JSON response (v0.7.0+)
 openkakao-rs send-photo <chat_id> <file> [-y]  # Send photo (JPEG/PNG/GIF) via LOCO SHIP+POST
 openkakao-rs send-file <chat_id> <file> [-y]   # Send any file (photo/video/doc) via LOCO
 openkakao-rs watch [--chat-id ID] [--raw]       # Watch real-time incoming messages
+openkakao-rs watch --json                       # Watch with NDJSON output (v0.7.0+)
 openkakao-rs watch --read-receipt               # Watch + send read receipts (NOTIREAD)
 openkakao-rs watch --max-reconnect 10           # Auto-reconnect on disconnect (default 5)
 openkakao-rs watch --download-media             # Auto-download media attachments
+openkakao-rs watch --resume                     # Resume from last saved watch state (v0.6.0+)
 openkakao-rs download <chat_id> <log_id> [-o D] # Download media from a specific message
 openkakao-rs loco-chats [--all]                 # List all chat rooms
 openkakao-rs loco-read <chat_id> [-n N] [--all] # Read message history (SYNCMSG)
 openkakao-rs loco-read <chat_id> --all --json   # JSON output
 openkakao-rs loco-members <chat_id>             # List members
 openkakao-rs loco-chatinfo <chat_id>            # Raw chat room info
+```
+
+### JSON output (v0.7.0+)
+
+All commands support `--json` (global flag). Key additions in v0.7.0:
+
+- `send --json`: `{"chat_id": ..., "log_id": ..., "status": "sent"}`
+- `send-file --json`: `{"chat_id": ..., "file": ..., "type": ..., "status": "sent"}`
+- `watch --json`: NDJSON stream, one JSON object per event line
+- `chats --json`, `read --json`, `members --json`, `stats --json`: already supported pre-v0.7.0
+
+## Analytics & Local Cache (v0.5.0+)
+
+```bash
+openkakao-rs stats <chat_id>              # Message counts, hourly activity histogram, top senders
+openkakao-rs cache <chat_id> [-n N]       # Sync messages to local SQLite cache
+openkakao-rs cache-search <query>         # Full-text search across cached messages
+openkakao-rs cache-stats                  # Show local cache statistics (row counts, db size)
 ```
 
 ### LOCO vs REST for messages
