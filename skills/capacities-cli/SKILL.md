@@ -1,8 +1,8 @@
 ---
-name: capx
+name: capacities-cli
 description: >
   Unofficial CLI for Capacities.io — manage your knowledge base from the terminal using the `capx`
-  command. Use this skill whenever the user mentions Capacities, capx, or wants to:
+  command. Use this skill whenever the user mentions Capacities, capacities-cli, capx, or wants to:
   create/update/search objects in Capacities, manage tasks and projects, register information from
   screenshots or messages into Capacities, archive completed tasks, save weblinks, write daily notes,
   or manage organizations and people. Also trigger when the user pastes a screenshot of chat messages

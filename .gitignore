@@ -3,5 +3,5 @@ node_modules/
 *.log
 .idea/
 .vscode/
-skills/capx/eval-results/
+skills/capacities-cli/eval-results/
 CLAUDE.md
