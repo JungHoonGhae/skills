@@ -10,9 +10,9 @@ description: >
   mentions "capacities" in any context related to note-taking or knowledge management.
 ---
 
-# capx — Unofficial CLI for Capacities.io
+# capacities-cli — Unofficial CLI for Capacities.io
 
-`capx` is a Rust CLI for managing your [Capacities.io](https://capacities.io) knowledge base from the terminal. It wraps the Capacities Portal API and supports full CRUD on objects, tasks, daily notes, weblinks, and more.
+`capacities-cli` is a Rust CLI (command: `capx`) for managing your [Capacities.io](https://capacities.io) knowledge base from the terminal. It wraps the Capacities Portal API and supports full CRUD on objects, tasks, daily notes, weblinks, and more.
 
 > **Disclaimer**: This project is not affiliated with or endorsed by Capacities. "Capacities" is a trademark of Capacities GmbH.
 
@@ -21,13 +21,13 @@ description: >
 ### Installation
 
 ```bash
-cargo install --git https://github.com/user/capx
+cargo install capacities-cli
 ```
 
 Or clone and build locally:
 
 ```bash
-git clone https://github.com/user/capx && cd capx && cargo build --release
+git clone https://github.com/JungHoonGhae/capacities-cli && cd capacities-cli && cargo build --release
 ```
 
 ### Authentication
@@ -82,13 +82,36 @@ capx search "query" --space-id <uuid>
 |---------|-------|
 | `task` | `capx task "Title" -b "body" -p status=next-up -p priority=high -c "context"` |
 | `daily` | `capx daily "markdown text"` or `capx daily "text" --no-timestamp` |
+| `daily get` | `capx daily get` — Read today's daily note |
+| `daily delete` | `capx daily delete --last 1 --yes` — Delete last block |
+| `daily delete` | `capx daily delete --marker "text" --yes` — Delete blocks containing text |
+| `daily set` | `capx daily set -b "# New content" --yes` — Replace entire daily note |
 | `link` | `capx link "https://..." -t "Title" -d "desc"` |
 | `context` | `capx context <object-id> "search term" [<uuid>...]` |
+
+### Export & Edit
+
+| Command | Usage |
+|---------|-------|
+| `export` | `capx export` — Export all objects as markdown to stdout |
+| `export` | `capx export -t Page --format json` — Export Pages as JSON |
+| `export` | `capx export -o ./backup` — Export to directory |
+| `edit` | `capx edit <id>` — Edit object in `$EDITOR` |
+
+### Diagnostics
+
+| Command | Usage |
+|---------|-------|
+| `auth` | `capx auth` — Check authentication status |
+| `doctor` | `capx doctor` — Check API connection, auth, and config |
+| `completions` | `capx completions bash` — Generate shell completions (bash/zsh/fish) |
 
 ### Global Flags
 
 - `--json` — JSON output for scripting
 - `--space-id <UUID>` — Override auto-detected space
+- `--appversion <VER>` — Override Portal API app version (or set `CAP_APPVERSION`)
+- `--portal-url <URL>` — Override Portal API base URL (or set `CAP_PORTAL_URL`)
 
 ## Object Types
 
