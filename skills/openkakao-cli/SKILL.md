@@ -89,6 +89,9 @@ All commands support `--json` (global flag). Key additions in v0.7.0:
 
 - `send --json`: `{"chat_id": ..., "log_id": ..., "status": "sent"}`
 - `send-file --json`: `{"chat_id": ..., "file": ..., "type": ..., "status": "sent"}`
+- `delete --json`: `{"chat_id": ..., "log_id": ..., "status": "deleted"}` (v0.9.0+)
+- `react --json`: `{"chat_id": ..., "log_id": ..., "reaction_type": ..., "status": "reacted"}` (v0.9.1+)
+- `mark-read --json`: `{"chat_id": ..., "watermark": ..., "status": "marked_read"}` (v0.9.0+)
 - `watch --json`: NDJSON stream, one JSON object per event line
 - `chats --json`, `read --json`, `members --json`, `stats --json`: already supported pre-v0.7.0
 
