@@ -75,6 +75,7 @@ openkakao-rs watch --capture                    # Output unknown push packets as
 openkakao-rs delete <chat_id> <log_id> [-y]   # Delete a message via DELETEMSG (v0.9.0+)
 openkakao-rs mark-read <chat_id> <log_id>     # Mark messages read up to logId via NOTIREAD (v0.9.0+)
 openkakao-rs react <chat_id> <log_id> [-t N]  # Add reaction via ACTION (type=1=like, v0.9.1+)
+openkakao-rs edit <chat_id> <log_id> <msg> [-y]  # Edit message via REWRITE (macOS: -203, v0.9.2+)
 openkakao-rs download <chat_id> <log_id> [-o D] # Download media from a specific message
 openkakao-rs loco-chats [--all]                 # List all chat rooms
 openkakao-rs loco-read <chat_id> [-n N] [--all] # Read message history (SYNCMSG)
@@ -91,6 +92,7 @@ All commands support `--json` (global flag). Key additions in v0.7.0:
 - `send-file --json`: `{"chat_id": ..., "file": ..., "type": ..., "status": "sent"}`
 - `delete --json`: `{"chat_id": ..., "log_id": ..., "status": "deleted"}` (v0.9.0+)
 - `react --json`: `{"chat_id": ..., "log_id": ..., "reaction_type": ..., "status": "reacted"}` (v0.9.1+)
+- `edit --json`: `{"chat_id": ..., "log_id": ..., "status": "edited"}` (v0.9.2+, macOS: -203)
 - `mark-read --json`: `{"chat_id": ..., "watermark": ..., "status": "marked_read"}` (v0.9.0+)
 - `watch --json`: NDJSON stream, one JSON object per event line
 - `chats --json`, `read --json`, `members --json`, `stats --json`: already supported pre-v0.7.0
@@ -168,8 +170,9 @@ openkakao-rs watch \
 OpenKakao separates:
 
 - `--unattended`: declare non-interactive operation
-- `--allow-non-interactive-send`: allow `send -y`, `send-file -y`, `send-photo -y`
+- `--allow-non-interactive-send`: allow `send -y`, `send-file -y`, `send-photo -y`, `edit -y`
 - `--allow-watch-side-effects`: allow `watch --read-receipt`, `--hook-cmd`, `--webhook-url`
+- `--completion-promise`: print `[DONE]` to stdout after successful command completion (v0.9.2+, useful for LLM agent integration)
 
 Recommended persistent config:
 
