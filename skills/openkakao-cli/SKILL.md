@@ -71,6 +71,9 @@ openkakao-rs watch --read-receipt               # Watch + send read receipts (NO
 openkakao-rs watch --max-reconnect 10           # Auto-reconnect on disconnect (default 5)
 openkakao-rs watch --download-media             # Auto-download media attachments
 openkakao-rs watch --resume                     # Resume from last saved watch state (v0.6.0+)
+openkakao-rs watch --capture                    # Output unknown push packets as NDJSON for protocol RE (v0.9.0+)
+openkakao-rs delete <chat_id> <log_id> [-y]   # Delete a message via DELETEMSG (v0.9.0+)
+openkakao-rs mark-read <chat_id> <log_id>     # Mark messages read up to logId via NOTIREAD (v0.9.0+)
 openkakao-rs download <chat_id> <log_id> [-o D] # Download media from a specific message
 openkakao-rs loco-chats [--all]                 # List all chat rooms
 openkakao-rs loco-read <chat_id> [-n N] [--all] # Read message history (SYNCMSG)
