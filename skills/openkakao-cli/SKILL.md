@@ -74,6 +74,7 @@ openkakao-rs watch --resume                     # Resume from last saved watch s
 openkakao-rs watch --capture                    # Output unknown push packets as NDJSON for protocol RE (v0.9.0+)
 openkakao-rs delete <chat_id> <log_id> [-y]   # Delete a message via DELETEMSG (v0.9.0+)
 openkakao-rs mark-read <chat_id> <log_id>     # Mark messages read up to logId via NOTIREAD (v0.9.0+)
+openkakao-rs react <chat_id> <log_id> [-t N]  # Add reaction via ACTION (type=1=like, v0.9.1+)
 openkakao-rs download <chat_id> <log_id> [-o D] # Download media from a specific message
 openkakao-rs loco-chats [--all]                 # List all chat rooms
 openkakao-rs loco-read <chat_id> [-n N] [--all] # Read message history (SYNCMSG)
