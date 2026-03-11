@@ -110,6 +110,7 @@ openkakao-rs cache-stats                  # Show local cache statistics (row cou
 
 - **REST** (`read`): Uses Pilsner cache — only returns messages for recently opened chats in the KakaoTalk app. Many chats return empty.
 - **LOCO** (`loco-read`): Uses SYNCMSG protocol — returns all server-retained messages. Preferred for full history access.
+- **Local cache merge (v0.9.3+)**: `read` automatically merges LOCO results with locally cached messages from `watch`. Messages captured during watch sessions appear in subsequent reads even when LOCO returns a limited window.
 
 ## Token Management
 
