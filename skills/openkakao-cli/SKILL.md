@@ -1,318 +1,142 @@
 ---
 name: openkakao-cli
-description: Work with OpenKakao CLI (`openkakao-rs`) for KakaoTalk on macOS. Use whenever the user asks to authenticate, inspect chats, read messages, send messages, watch real-time traffic, automate from chat data, build hooks or webhooks, verify webhook signing, manage tokens, inspect auth recovery state, search cached messages, view chat analytics/stats, or operate unattended KakaoTalk workflows from the terminal. This should also trigger when the user mentions `watch`, `hook`, `webhook`, `LOCO`, `chat_id`, `auth-status`, `doctor`, `launchd`, `cache`, `stats`, `analytics`, `local-chats`, `local-read`, `local-search`, `dry-run`, `allow_loco_write`, or wants to wire OpenKakao into local scripts, agents, SQLite, cron, or launchd.
+description: Work with OpenKakao CLI (`openkakao-cli`) for KakaoTalk on macOS. Use whenever the user wants to send or read KakaoTalk messages from the terminal, inspect chats, automate from chat data, or wire KakaoTalk into local scripts/agents. On current KakaoTalk macOS builds the recommended path is the **login-free AX-automation commands** `local-send` and `ax-read`, which drive the KakaoTalk UI directly via the macOS Accessibility API (no server login, no network). Trigger on `local-send`, `ax-read`, `allow_ax_send`, `allowed_send_chats`, "Accessibility", "send kakao(talk)", "read kakao(talk)", as well as legacy terms `send`, `read`, `chats`, `watch`, `hook`, `webhook`, `LOCO`, `chat_id`, `local-chats`, `local-read`, `local-search`, `doctor`, `login`, `auth-status` (note: the server-login-based commands are broken on recent builds — see below).
 ---
 
 # OpenKakao CLI
 
-`openkakao-rs` is a KakaoTalk CLI with REST, LOCO, and local DB support. **LOCO write operations (send, delete, edit, react) are disabled by default** — they require `safety.allow_loco_write = true` in config. Prefer safe local-db commands for reads, use `--dry-run` to preview writes.
+`openkakao-cli` is a KakaoTalk CLI for macOS. The binary is **`openkakao-cli`** (older docs/skills said `openkakao-rs` — that name is obsolete).
 
-## Safety model
+> [!IMPORTANT]
+> **Server login is broken on recent KakaoTalk macOS builds.** `login --save`/`login --manual` and everything that depends on a LOCO/REST session (`send`, `read`, `chats`, `watch`, `friends`, `me`, etc.) mostly do not work anymore, and **retrying login from an unregistered device can get the account's sub-device login blocked** — do not loop on it.
+>
+> **But the CLI still works without logging in.** `local-send` and `ax-read` drive the real KakaoTalk app UI via the macOS Accessibility (AX) API — no server session, no network contact — so they are the reliable path for sending and reading messages today. Prefer them.
 
-LOCO write operations risk account bans. They are disabled by default.
+## Login-free path (recommended): `local-send` / `ax-read`
+
+These require only that KakaoTalk.app is running and already logged in, plus Accessibility permission granted to the terminal.
+
+```bash
+openkakao-cli ax-read "<chat display name>" -n 20            # read recent visible messages
+openkakao-cli ax-read "<chat display name>" -n 20 --json     # structured output
+openkakao-cli local-send "<chat display name>" "message" --dry-run   # preview (no allowlist needed)
+openkakao-cli local-send "<chat display name>" "message" -y          # actually send
+openkakao-cli local-send "<chat display name>" "message" -y --json
+```
+
+Key facts:
+
+- **Chats are matched by their exact display name in the chat list** — not a `chat_id`. Matching is exact (not substring), and if two visible chats share the same name the command refuses to guess. For the memo/self chat, use your own display name (KakaoTalk does not use the literal string "나와의 채팅" in its AX tree).
+- **`ax-read` only returns messages currently rendered on screen.** Scroll up in KakaoTalk first for older history. Photos/files show as `"[사진]"`/`"[파일]"` placeholders; text messages carry their timestamp.
+- **`local-send` requires an explicit opt-in AND an exact-match allowlist** — see Safety below. This is the only guard against sending to the wrong chat (there is no chat-id to cross-check).
+- No network, no tokens, no ban risk from these two commands (they never contact Kakao's servers).
+- `OPENKAKAO_CLI_DEBUG=1` prints per-step timing to stderr for `local-send`/`ax-read`.
+
+## Safety model for `local-send`
+
+`local-send` types text and hits Enter in a real KakaoTalk window, so it is disabled by default and needs two config keys:
 
 ```toml
 # ~/.config/openkakao/config.toml
 [safety]
-allow_loco_write = true   # Required to enable send/delete/edit/react
+allow_ax_send = true
+allowed_send_chats = ["exact display name you allow", "another allowed chat"]
 ```
+
+- `allow_ax_send = true` — general opt-in for AX-based sending.
+- `allowed_send_chats` — **exact-match allowlist**. A chat not on this list is rejected before anything is typed. `--dry-run` skips both checks so you can preview against any name.
 
 ## Quick checks
 
 ```bash
-openkakao-rs --version
-openkakao-rs auth
-openkakao-rs auth-status
-openkakao-rs doctor          # Now checks local DB access + LOCO write status
+openkakao-cli --version
+openkakao-cli doctor          # environment / installation diagnostics
 ```
 
-If Homebrew install is needed:
+Homebrew install/upgrade:
 
 ```bash
 brew tap JungHoonGhae/openkakao
-brew install JungHoonGhae/openkakao/openkakao-rs
+brew install openkakao-cli
+brew upgrade openkakao-cli
 ```
 
-If the user seems to have an older binary than the repo docs or source imply, check:
+## Local database commands — currently unreliable
 
 ```bash
-which openkakao-rs
-openkakao-rs --version
-openkakao-rs send --help
-openkakao-rs watch --help
+openkakao-cli local-chats [-n 50]            # list chats from the local encrypted DB
+openkakao-cli local-read <chat_id> [-n 30]   # read messages from local DB
+openkakao-cli local-search "keyword" [-n 20] # search local DB
+openkakao-cli local-schema                   # dump DB schema
 ```
 
-Persistent operator policy can live in:
+These read the SQLCipher-encrypted KakaoTalk DB directly (no server contact). **On recent KakaoTalk macOS builds the key-derivation formula has drifted, so decryption often fails** even when the user ID and device UUID are recovered — treat these as unreliable and prefer `ax-read` for login-free reading.
+
+## Server-login commands (mostly broken on recent builds)
+
+These need a working LOCO/REST session, which recent builds break. Listed for completeness; do not rely on them, and never loop on `login`:
 
 ```bash
-~/.config/openkakao/config.toml
+openkakao-cli login --save            # extract token from Cache.db (broken: no token cached on recent builds)
+openkakao-cli login --manual --save   # email/password login (broken: status=-100 device-not-registered)
+openkakao-cli auth / auth-status      # verify/inspect token state
+openkakao-cli chats / read <id> / members <id>   # REST/LOCO reads
+openkakao-cli send <chat_id> <msg> [-y]          # LOCO send (needs allow_loco_write)
+openkakao-cli send-me <msg> [-y]                 # LOCO send to memo chat
+openkakao-cli watch [--json] [--hook-cmd ...] [--webhook-url ...]   # real-time LOCO watch
+openkakao-cli delete / mark-read / react / edit / download          # other LOCO write/read ops
+openkakao-cli friends / me / settings / profile / stats             # profile & analytics
 ```
 
-Persisted runtime state now also lives in:
+If server login is ever needed (older builds), it still uses `~/.config/openkakao/config.toml` (`[safety] allow_loco_write = true` gates LOCO writes) and `~/.config/openkakao/state.json` for recovery state. But default to the AX path above.
 
-```bash
-~/.config/openkakao/state.json
-```
+## Recommended workflow
 
-## Local Database Commands (zero server contact, zero risk)
+1. Sanity: `openkakao-cli --version && openkakao-cli doctor`
+2. **Read a chat (login-free):** `openkakao-cli ax-read "<chat name>" -n 20 --json`
+3. **Preview a send:** `openkakao-cli local-send "<chat name>" "message" --dry-run`
+4. **Allowlist the chat** in `~/.config/openkakao/config.toml` (`allow_ax_send = true`, add the exact name to `allowed_send_chats`)
+5. **Send:** `openkakao-cli local-send "<chat name>" "message" -y`
 
-```bash
-openkakao-rs local-chats [-n 50]           # List chats from encrypted local DB
-openkakao-rs local-read <chat_id> [-n 30]  # Read messages from local DB
-openkakao-rs local-search "keyword" [-n 20] # Search all messages in local DB
-openkakao-rs local-schema                   # Show database table schema
-```
+## Multiline (줄바꿈) messages
 
-These read the SQLCipher-encrypted KakaoTalk database directly — no network, no tokens, no ban risk. Use `--json` for structured output.
+`\n` typed literally on the command line is sent as the two characters `\n`, not a newline. Build a real newline and pass it as the argument:
 
-## REST API Commands (read-only, cached token)
-
-```bash
-openkakao-rs login --save          # Extract credentials from KakaoTalk's Cache.db
-openkakao-rs auth                  # Verify token validity
-openkakao-rs me                    # Show your profile
-openkakao-rs friends [-f] [-s q]   # List friends (favorites/search)
-openkakao-rs settings              # Show account settings
-openkakao-rs chats                 # List chat rooms (Pilsner REST API)
-openkakao-rs read <id> [-n N] [--all] # Read messages (Pilsner, limited cache)
-openkakao-rs members <id>          # List chat room members
-```
-
-## LOCO Protocol Commands (full access, real-time — write ops require opt-in)
-
-```bash
-openkakao-rs loco-test                          # Test full LOCO connection
-openkakao-rs send <chat_id> <message> [-y]        # Send text message (requires allow_loco_write)
-openkakao-rs send --me <message> [-y]             # Send to memo chat (나와의 채팅, v1.1.0+)
-openkakao-rs send <chat_id> <message> --dry-run   # Preview without executing (v1.1.0+)
-openkakao-rs send <chat_id> <message> -y --json   # Send and get JSON response
-openkakao-rs send-photo <chat_id> <file> [-y]  # Send photo (JPEG/PNG/GIF) via LOCO SHIP+POST
-openkakao-rs send-file <chat_id> <file> [-y]   # Send any file (photo/video/doc) via LOCO
-openkakao-rs watch [--chat-id ID] [--raw]       # Watch real-time incoming messages
-openkakao-rs watch --json                       # Watch with NDJSON output (v0.7.0+)
-openkakao-rs watch --read-receipt               # Watch + send read receipts (NOTIREAD)
-openkakao-rs watch --max-reconnect 10           # Auto-reconnect on disconnect (default 5)
-openkakao-rs watch --download-media             # Auto-download media attachments
-openkakao-rs watch --resume                     # Resume from last saved watch state (v0.6.0+)
-openkakao-rs watch --capture                    # Output unknown push packets as NDJSON for protocol RE (v0.9.0+)
-openkakao-rs delete <chat_id> <log_id> [-y]   # Delete a message via DELETEMSG (v0.9.0+)
-openkakao-rs mark-read <chat_id> <log_id>     # Mark messages read up to logId via NOTIREAD (v0.9.0+)
-openkakao-rs react <chat_id> <log_id> [-t N]  # Add reaction via ACTION (type=1=like, v0.9.1+)
-openkakao-rs edit <chat_id> <log_id> <msg> [-y]  # Edit message via REWRITE (macOS: -203, v0.9.2+)
-openkakao-rs download <chat_id> <log_id> [-o D] # Download media from a specific message
-openkakao-rs loco-chats [--all]                 # List all chat rooms
-openkakao-rs loco-read <chat_id> [-n N] [--all] # Read message history (SYNCMSG)
-openkakao-rs loco-read <chat_id> --all --json   # JSON output
-openkakao-rs loco-members <chat_id>             # List members
-openkakao-rs loco-chatinfo <chat_id>            # Raw chat room info
-```
-
-### JSON output (v0.7.0+)
-
-All commands support `--json` (global flag). Key additions in v0.7.0:
-
-- `send --dry-run --json`: `{"dry_run": true, "action": "send", "chat_id": ..., "message": ...}` (v1.1.0+)
-- `send --json`: `{"chat_id": ..., "log_id": ..., "status": "sent"}`
-- `send-file --json`: `{"chat_id": ..., "file": ..., "type": ..., "status": "sent"}`
-- `delete --json`: `{"chat_id": ..., "log_id": ..., "status": "deleted"}` (v0.9.0+)
-- `react --json`: `{"chat_id": ..., "log_id": ..., "reaction_type": ..., "status": "reacted"}` (v0.9.1+)
-- `edit --json`: `{"chat_id": ..., "log_id": ..., "status": "edited"}` (v0.9.2+, macOS: -203)
-- `mark-read --json`: `{"chat_id": ..., "watermark": ..., "status": "marked_read"}` (v0.9.0+)
-- `watch --json`: NDJSON stream, one JSON object per event line
-- `chats --json`, `read --json`, `members --json`, `stats --json`: already supported pre-v0.7.0
-
-## Analytics & Local Cache (v0.5.0+)
-
-```bash
-openkakao-rs stats <chat_id>              # Message counts, hourly activity histogram, top senders
-openkakao-rs cache <chat_id> [-n N]       # Sync messages to local SQLite cache
-openkakao-rs cache-search <query>         # Full-text search across cached messages
-openkakao-rs cache-stats                  # Show local cache statistics (row counts, db size)
-```
-
-### LOCO vs REST for messages
-
-- **REST** (`read`): Uses Pilsner cache — only returns messages for recently opened chats in the KakaoTalk app. Many chats return empty.
-- **LOCO** (`loco-read`): Uses SYNCMSG protocol — returns all server-retained messages. Preferred for full history access.
-- **Local cache merge (v0.9.3+)**: `read` automatically merges LOCO results with locally cached messages from `watch`. Messages captured during watch sessions appear in subsequent reads even when LOCO returns a limited window.
-
-## Token Management
-
-```bash
-openkakao-rs relogin [--fresh-xvc]    # Refresh token via login.json + X-VC
-openkakao-rs renew                     # Attempt token renewal via refresh_token
-openkakao-rs watch-cache [--interval N] # Poll Cache.db for fresh tokens
-openkakao-rs auth-status               # Show persisted auth recovery state and cooldowns
-openkakao-rs doctor [--loco]           # Environment, token, recovery, and safety diagnostics
-```
-
-LOCO commands automatically refresh tokens via login.json + X-VC when needed, and REST/LOCO now share the same persisted recovery state.
-
-## Workflow (safety-first)
-
-1. Quick sanity: `openkakao-rs --version && openkakao-rs doctor`
-2. **Safe read**: `openkakao-rs local-chats --json` (zero server contact)
-3. **Safe read**: `openkakao-rs local-read <chat_id> --json`
-4. **Preview write**: `openkakao-rs send <chat_id> "message" --dry-run`
-5. **Full history**: `openkakao-rs read <chat_id> --all` (LOCO, needs auth)
-6. **Send** (requires `allow_loco_write`): `openkakao-rs send -y <chat_id> "message text"`
-7. Only when you need REST-only features: open KakaoTalk app → `openkakao-rs login --save` → `openkakao-rs auth`
-
-## Watch automation workflow
-
-Use this order:
-
-1. Confirm `watch` behavior first: `openkakao-rs watch --help`
-2. Start local-only with `--hook-cmd`
-3. Add filters:
-   - `--hook-chat-id`
-   - `--hook-keyword`
-   - `--hook-type`
-4. Only then move to `--webhook-url` if the user explicitly wants external delivery
-5. If using a webhook, prefer `--webhook-signing-secret` and tell the user to verify:
-   - `X-OpenKakao-Timestamp`
-   - `X-OpenKakao-Signature`
-
-Local-first example:
-
-```bash
-openkakao-rs watch \
-  --hook-cmd 'jq . > /tmp/openkakao-event.json' \
-  --hook-chat-id 382416827148557 \
-  --hook-type 1
-```
-
-Webhook example:
-
-```bash
-openkakao-rs watch \
-  --webhook-url https://hooks.example.com/openkakao \
-  --webhook-header 'Authorization: Bearer token' \
-  --webhook-signing-secret 'super-secret' \
-  --hook-keyword urgent
-```
-
-## Unattended and policy gates
-
-OpenKakao separates:
-
-- `--unattended`: declare non-interactive operation
-- `--allow-non-interactive-send`: allow `send -y`, `send-file -y`, `send-photo -y`, `edit -y`
-- `--allow-watch-side-effects`: allow `watch --read-receipt`, `--hook-cmd`, `--webhook-url`
-- `--completion-promise`: print `[DONE]` to stdout after successful command completion (v0.9.2+, useful for LLM agent integration)
-
-Recommended persistent config:
-
-```toml
-[mode]
-unattended = true
-
-[send]
-allow_non_interactive = true
-default_prefix = true
-
-[watch]
-allow_side_effects = true
-default_max_reconnect = 10
-
-[auth]
-prefer_relogin = true
-auto_renew = true
-
-[safety]
-allow_loco_write = true                   # Required for send/delete/edit/react (v1.1.0+)
-min_unattended_send_interval_secs = 10
-min_hook_interval_secs = 2
-min_webhook_interval_secs = 2
-hook_timeout_secs = 20
-webhook_timeout_secs = 10
-allow_insecure_webhooks = false
-```
-
-Interpretation:
-
-- unattended sends are rate-limited by default
-- local hooks are rate-limited and timed out
-- webhooks are rate-limited, timed out, and default to HTTPS only unless localhost
-- `auth-status` and `doctor` are the first checks before assuming a long-running job is healthy
-
-## Speed tips
-
-- Prefer **LOCO** for send/read/history — REST token expiry + `login --save` can block waiting on Cache.db.
-- Cache `chat_id`s you use often; avoid running `loco-chats --all` repeatedly.
-- Use `-y/--yes` for non-interactive sends when you're confident the `chat_id` is correct.
-
-## Multiline (줄바꿈) 메시지 보내기
-
-주의: 커맨드라인에서 `\n`을 그냥 쓰면 **줄바꿈이 아니라 문자 그대로** `\n`이 전송될 수 있음. 실제 개행 문자를 만들어서 인자로 넘겨야 함.
-
-예시:
-
-- bash/zsh:
-  - `openkakao-rs send -y <chat_id> "$(printf '첫줄\n\n둘째줄')"`
-- bash 전용($'' quoting):
-  - `openkakao-rs send -y <chat_id> $'첫줄\n\n둘째줄'`
-- fish:
-  - `openkakao-rs send -y <chat_id> (printf '첫줄\n\n둘째줄')`
+- bash/zsh: `openkakao-cli local-send "<chat name>" "$(printf '첫줄\n\n둘째줄')" -y`
+- bash ($'' quoting): `openkakao-cli local-send "<chat name>" $'첫줄\n\n둘째줄' -y`
+- fish: `openkakao-cli local-send "<chat name>" (printf '첫줄\n\n둘째줄') -y`
 
 ## Troubleshooting
 
-### Token invalid or `-950` error
+### "Accessibility permission is not granted"
 
-```bash
-# Open KakaoTalk app first, then:
-openkakao-rs login --save
-openkakao-rs auth
-openkakao-rs auth-status
-```
+`local-send`/`ax-read` need the terminal app added to **System Settings → Privacy & Security → Accessibility**. Enable it for Terminal.app / iTerm2 / etc., then re-run. This is a one-time GUI step a human must do.
 
-LOCO commands auto-refresh tokens, so `-950` is usually handled automatically.
+### "chat '<name>' not found in visible/loaded chat list"
 
-If the machine has been running unattended for a while, inspect:
+The name doesn't exactly match a chat in KakaoTalk's list. Use the exact display name as shown in the chat list. For the memo/self chat, use your own display name. Also make sure the KakaoTalk main window (chat list) is open.
 
-- `openkakao-rs auth-status --json`
-- `openkakao-rs doctor --loco`
+### "could not find KakaoTalk's main chat-list window"
 
-Look for:
+KakaoTalk's main window is closed. Open the app (`open -a KakaoTalk`) and make sure the chat list window is showing, then retry.
 
-- `last_failure_kind`
-- `consecutive_failures`
-- `auth_cooldown_remaining_secs`
-- `last_recovery_source`
+### Ambiguous match / refuses to send
 
-### `login --save` seems to hang
-
-`login --save` may wait until KakaoTalk updates Cache.db.
-
-- Open KakaoTalk → open the chat list once (forces a cache refresh)
-- (Optional) `openkakao-rs watch-cache --interval 2` to see when tokens change
-- Or skip REST entirely and use LOCO (`loco-test` / `send` / `loco-read`).
-
-### GETMSGS returns `-300`
-
-This is expected on Mac (dtype=2). Use `loco-read` (SYNCMSG) instead of REST `read` (GETMSGS).
+Two visible chats share the exact display name; `local-send` won't guess. Rename one in KakaoTalk or target a uniquely-named chat.
 
 ### Homebrew formula not found
 
 ```bash
 brew tap JungHoonGhae/openkakao
 brew update
-brew install JungHoonGhae/openkakao/openkakao-rs
+brew install openkakao-cli
 ```
 
 ## Guardrails
 
-- **LOCO write disabled by default**: send/delete/edit/react require `safety.allow_loco_write = true`. Always recommend `--dry-run` first. Use `local-chats`/`local-read` for safe reads.
-- **Prefix/traceability**: By default, `openkakao-rs` prepends `🤖 [Sent via openkakao]` to outgoing messages. Use `--no-prefix` to disable it.
-  - If you want a custom tag (e.g. `🤖 [openkakao]`), either add it *in the message text* (and keep default prefix), or disable the default prefix and add your own — avoid double-prefixing unless you want it.
-- Use `-y/--yes` only when you are sure the `chat_id` is correct.
-- Do not assume unattended send can burst freely; the CLI now rate-limits it by default.
-- Avoid `--force` unless you know what you're doing (higher ban risk).
-- Prefer `watch --hook-cmd` over webhooks when the task can stay on the same machine.
-- If using `--webhook-url`, be explicit that chat content leaves the local trust boundary.
-- Expect non-HTTPS remote webhooks to be blocked unless the user has explicitly loosened `safety.allow_insecure_webhooks`.
-- Treat `watch` hooks/webhooks as best-effort delivery, not a durable queue or exactly-once event bus.
-- Treat unattended mode as a policy decision. If the user is building a service, push them toward `config.toml` instead of repeating long flag strings.
-- For macOS services, steer users toward `examples/launchd/` in the repo instead of ad-hoc LaunchAgent files.
-- Do not expose personal chat content unless the user explicitly asks.
-- Prefer summary/aggregation output for logs and reports.
+- **Prefer `local-send`/`ax-read`** (login-free, no ban risk) over the server-login commands, which are broken on current builds.
+- **Never loop on `login`** from an unregistered device — it can get the account's sub-device login blocked (real cases reported).
+- **`local-send` only sends to allowlisted chats.** Keep `allowed_send_chats` tight; recommend `--dry-run` first. Do not add a chat to the allowlist without the user's intent.
+- **Prefix/traceability:** by default outgoing messages get `🤖 [Sent via openkakao]` prepended. Use `--no-prefix` to disable, or put a custom tag in the message text.
+- Do not expose personal chat content unless the user explicitly asks; prefer summaries.
+- `ax-read` reads only what's on screen — don't claim full history from it.

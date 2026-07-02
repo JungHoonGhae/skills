@@ -1,4 +1,4 @@
 interface:
   display_name: "OpenKakao CLI"
-  short_description: "Use OpenKakao CLI for read-only chat workflows"
-  default_prompt: "Use openkakao-rs to authenticate, inspect chats, and build read-only automation flows."
+  short_description: "Send/read KakaoTalk on macOS without login, via Accessibility automation"
+  default_prompt: "Use openkakao-cli to send and read KakaoTalk messages on macOS. Prefer the login-free commands local-send and ax-read (Accessibility automation, no server session); server login is broken on recent builds."
