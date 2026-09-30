@@ -1,6 +1,7 @@
 ---
 name: openkakao-cli
-description: Work with OpenKakao CLI (`openkakao-cli`) for KakaoTalk on macOS. Use whenever the user wants to send or read KakaoTalk messages from the terminal, inspect chats, automate from chat data, or wire KakaoTalk into local scripts/agents. On current KakaoTalk macOS builds the recommended path is the **login-free AX-automation commands** `local-send` and `ax-read`, which drive the KakaoTalk UI directly via the macOS Accessibility API (no server login, no network). Trigger on `local-send`, `ax-read`, `allow_ax_send`, `allowed_send_chats`, "Accessibility", "send kakao(talk)", "read kakao(talk)", as well as legacy terms `send`, `read`, `chats`, `watch`, `hook`, `webhook`, `LOCO`, `chat_id`, `local-chats`, `local-read`, `local-search`, `doctor`, `login`, `auth-status` (note: the server-login-based commands are broken on recent builds — see below).
+description: >-
+  Work with OpenKakao CLI (`openkakao-cli`) for KakaoTalk on macOS. Use whenever the user wants to send or read KakaoTalk messages from the terminal, inspect chats, automate from chat data, or wire KakaoTalk into local scripts/agents. On current KakaoTalk macOS builds the recommended path is the **login-free AX-automation commands** `local-send` and `ax-read`, which drive the KakaoTalk UI directly via the macOS Accessibility API (no server login, no network). Trigger on `local-send`, `ax-read`, `allow_ax_send`, `allowed_send_chats`, "Accessibility", "send kakao(talk)", "read kakao(talk)", as well as legacy terms `send`, `read`, `chats`, `watch`, `hook`, `webhook`, `LOCO`, `chat_id`, `local-chats`, `local-read`, `local-search`, `doctor`, `login`, `auth-status` (note: the server-login-based commands are broken on recent builds — see below).
 ---
 
 # OpenKakao CLI
