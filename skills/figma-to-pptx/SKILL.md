@@ -34,7 +34,9 @@ scripts/figma_to_pptx.py <Figma 링크> -o 결과.pptx
 
 ## 준비
 
-1. **Figma 토큰**: Figma → Settings → Security → Personal access tokens → 새 토큰(범위 *File content: Read-only*). 환경 변수 `FIGMA_TOKEN`으로 넘깁니다. 토큰은 출력하거나 파일에 적지 않습니다.
+1. **Figma 토큰**: Figma → 왼쪽 위 계정 메뉴 → Settings → Security → Personal access tokens → Generate new token(범위 *File content: Read-only*). 변환할 파일을 열 수 있는 계정에서 발급하고, 창을 닫기 전에 복사합니다. 스크립트는 환경 변수 `FIGMA_TOKEN`을 먼저 보고, 없으면 `~/.config/figma-to-pptx/token` 파일을 읽습니다. **토큰을 대화창에 붙여 달라고 하지 말고**, 사용자가 토큰을 복사한 채로 자기 터미널에서 아래 한 줄을 직접 실행하게 안내합니다(토큰이 화면·기록에 남지 않음).
+   - macOS: `mkdir -p ~/.config/figma-to-pptx && pbpaste > ~/.config/figma-to-pptx/token && chmod 600 ~/.config/figma-to-pptx/token`
+   - Windows PowerShell: `New-Item -Force -ItemType Directory "$HOME\.config\figma-to-pptx" | Out-Null; Get-Clipboard | Set-Content -Encoding ascii -NoNewline "$HOME\.config\figma-to-pptx\token"`
 2. **Python 3.10+**와 패키지 `python-pptx`, `pillow`, `fonttools`. `uv`가 있으면 설치 없이 바로 돌립니다.
 3. 처음 한 번은 Figma에 쓰인 글꼴을 Google Fonts에서 받아 `~/.cache/figma-to-pptx`에 굵기별로 만들어 둡니다(한글 글꼴은 몇 분).
 
@@ -66,7 +68,7 @@ uv run --with python-pptx --with pillow --with fonttools python scripts/figma_to
 
 ## 순서
 
-1. 링크를 받지 못했으면 변환할 Figma 페이지나 프레임 링크를 묻습니다. `FIGMA_TOKEN`이 있는지 확인합니다(값은 보지 않음).
+1. 링크를 받지 못했으면 변환할 Figma 페이지나 프레임 링크를 묻습니다(Figma에서 페이지 이름 우클릭 → Copy link, 프레임은 선택 후 Copy link to selection). 토큰이 `FIGMA_TOKEN`이나 토큰 파일에 있는지만 확인하고(값은 보지 않음), 없으면 위 「준비」 1번대로 발급·저장을 안내합니다.
 2. 위 명령으로 변환하고 마지막 보고를 읽습니다.
 3. 보고에 아래가 있으면 사용자에게 그대로 알립니다.
    - `font not found …`: Google Fonts에 없는 글꼴입니다. 글꼴 파일을 `--font`로 주고 다시 돌립니다.
