@@ -41,6 +41,7 @@ HANGUL = ((0x1100, 0x11FF), (0x3130, 0x318F), (0xAC00, 0xD7A3))   # whole Hangul
 TOKENS = re.compile(f'[{chr(0xAC00)}-{chr(0xD7A3)}]|[^\\s{chr(0xAC00)}-{chr(0xD7A3)}]+|\\s+')   # Hangul breaks per syllable like Figma
 HAN = re.compile(f'[{chr(0xAC00)}-{chr(0xD7A3)}]')
 CACHE = os.path.expanduser(os.environ.get('FIGMA_PPTX_CACHE', '~/.cache/figma-to-pptx'))
+TOKEN_FILE = os.path.join(os.path.expanduser('~'), '.config', 'figma-to-pptx', 'token')   # lets people save the token without pasting it into a chat
 S, DX, DY = 1.0, 0, 0   # ponytail: per-frame scale/offset as globals; the CLI converts one frame at a time
 report = collections.Counter()
 
@@ -49,8 +50,11 @@ report = collections.Counter()
 
 def api(path):
     token = os.environ.get('FIGMA_TOKEN') or os.environ.get('FIGMA_ACCESS_TOKEN')
+    if not token and os.path.exists(TOKEN_FILE):
+        token = open(TOKEN_FILE, encoding='utf-8-sig', errors='ignore').read().strip()
     if not token:
-        sys.exit('FIGMA_TOKEN is not set (Figma > Settings > Security > Personal access tokens, scope file_content:read)')
+        sys.exit(f'No Figma token: set FIGMA_TOKEN or save it in {TOKEN_FILE} '
+                 '(Figma > Settings > Security > Personal access tokens, scope File content: read-only). See SKILL.md.')
     for wait in (0, 10, 30, 60, 120):
         time.sleep(wait)
         try:
