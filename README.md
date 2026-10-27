@@ -29,6 +29,7 @@ If these skills help you, consider supporting their maintenance:
 | **[discord-admin-py](skills/discord-admin-py/)** | Discord server administration via inference.sh | Discord bot, channel management, role assignment | [![discord-admin-py](https://skills-badge.vercel.app/badge/JungHoonGhae/skills/discord-admin-py?style=flat-square)](https://skills.sh/JungHoonGhae/skills/discord-admin-py) |
 | **[openkakao-cli](skills/openkakao-cli/)** | OpenKakao CLI workflow for auth, chats, reads, and read-only automation | "openkakao", "openkakao-rs", "kakao chat CLI", "-950 token" | [![openkakao-cli](https://skills-badge.vercel.app/badge/JungHoonGhae/skills/openkakao-cli?style=flat-square)](https://skills.sh/JungHoonGhae/skills/openkakao-cli) |
 | **[macos-update-block](skills/macos-update-block/)** | Toggle macOS automatic-update blocking on/off (settings + hosts), or check status | "맥 업데이트 차단/켜기", "stop macOS updating", "block Tahoe update" | [![macos-update-block](https://skills-badge.vercel.app/badge/JungHoonGhae/skills/macos-update-block?style=flat-square)](https://skills.sh/JungHoonGhae/skills/macos-update-block) |
+| **[figma-to-pptx](skills/figma-to-pptx/)** | Convert Figma frames to a fully editable PowerPoint with the same fonts embedded | "Figma를 PPT로", "figma to pptx", "editable PowerPoint from Figma" | [![figma-to-pptx](https://skills-badge.vercel.app/badge/JungHoonGhae/skills/figma-to-pptx?style=flat-square)](https://skills.sh/JungHoonGhae/skills/figma-to-pptx) |
 
 ## Installation
 
@@ -48,6 +49,7 @@ npx skills add JungHoonGhae/skills@oh-my-lilys
 npx skills add JungHoonGhae/skills@discord-admin-py
 npx skills add JungHoonGhae/skills@openkakao-cli
 npx skills add JungHoonGhae/skills@macos-update-block
+npx skills add JungHoonGhae/skills@figma-to-pptx
 ```
 
 ### Manual Installation
