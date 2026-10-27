@@ -35,9 +35,12 @@ scripts/figma_to_pptx.py <Figma 링크> -o 결과.pptx
 ## 준비
 
 1. **Figma 토큰**: Figma → 왼쪽 위 계정 메뉴 → Settings → Security → Personal access tokens → Generate new token(범위 *File content: Read-only*). 변환할 파일을 열 수 있는 계정에서 발급하고, 창을 닫기 전에 복사합니다. 스크립트는 환경 변수 `FIGMA_TOKEN`을 먼저 보고, 없으면 `~/.config/figma-to-pptx/token` 파일을 읽습니다. **토큰을 대화창에 붙여 달라고 하지 말고**, 사용자가 토큰을 복사한 채로 자기 터미널에서 아래 한 줄을 직접 실행하게 안내합니다(토큰이 화면·기록에 남지 않음).
-   - macOS: `mkdir -p ~/.config/figma-to-pptx && pbpaste > ~/.config/figma-to-pptx/token && chmod 600 ~/.config/figma-to-pptx/token`
    - Windows PowerShell: `New-Item -Force -ItemType Directory "$HOME\.config\figma-to-pptx" | Out-Null; Get-Clipboard | Set-Content -Encoding ascii -NoNewline "$HOME\.config\figma-to-pptx\token"`
-2. **Python 3.10+**와 패키지 `python-pptx`, `pillow`, `fonttools`. `uv`가 있으면 설치 없이 바로 돌립니다.
+   - macOS 터미널: `mkdir -p ~/.config/figma-to-pptx && pbpaste > ~/.config/figma-to-pptx/token && chmod 600 ~/.config/figma-to-pptx/token`
+2. **uv** (Python과 패키지 `python-pptx`, `pillow`, `fonttools`를 알아서 준비). 없으면 설치합니다.
+   - Windows PowerShell: `powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"` → 터미널을 새로 엽니다.
+   - macOS: `curl -LsSf https://astral.sh/uv/install.sh | sh`
+   - uv를 쓸 수 없으면 `pip install python-pptx pillow fonttools` 뒤 `python`(Windows는 `py`)으로 바로 실행해도 됩니다.
 3. 처음 한 번은 Figma에 쓰인 글꼴을 Google Fonts에서 받아 `~/.cache/figma-to-pptx`에 굵기별로 만들어 둡니다(한글 글꼴은 몇 분).
 
 환경을 처음 갖췄으면 인터넷 없이 도는 자체 점검부터 합니다.
@@ -45,6 +48,8 @@ scripts/figma_to_pptx.py <Figma 링크> -o 결과.pptx
 ```bash
 uv run --with python-pptx --with pillow --with fonttools python scripts/figma_to_pptx.py --self-test
 ```
+
+Windows도 같은 명령입니다(PowerShell). 스크립트는 이 스킬 폴더의 `scripts/` 안에 있습니다.
 
 ## 실행
 
