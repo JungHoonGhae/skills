@@ -34,9 +34,9 @@ scripts/figma_to_pptx.py <Figma 링크> -o 결과.pptx
 
 ## 준비
 
-1. **Figma 토큰**: Figma → 왼쪽 위 계정 메뉴 → Settings → Security → Personal access tokens → Generate new token(범위 *File content: Read-only*). 변환할 파일을 열 수 있는 계정에서 발급하고, 창을 닫기 전에 복사합니다. 스크립트는 환경 변수 `FIGMA_TOKEN`을 먼저 보고, 없으면 `~/.config/figma-to-pptx/token` 파일을 읽습니다. **토큰을 대화창에 붙여 달라고 하지 말고**, 사용자가 토큰을 복사한 채로 자기 터미널에서 아래 한 줄을 직접 실행하게 안내합니다(토큰이 화면·기록에 남지 않음).
-   - Windows PowerShell: `New-Item -Force -ItemType Directory "$HOME\.config\figma-to-pptx" | Out-Null; Get-Clipboard | Set-Content -Encoding ascii -NoNewline "$HOME\.config\figma-to-pptx\token"`
-   - macOS 터미널: `mkdir -p ~/.config/figma-to-pptx && pbpaste > ~/.config/figma-to-pptx/token && chmod 600 ~/.config/figma-to-pptx/token`
+1. **Figma 토큰**: Figma → 왼쪽 위 계정 메뉴 → Settings → Security → Personal access tokens → Generate new token(범위 *File content: Read-only*). 변환할 파일을 열 수 있는 계정에서 발급하고, 창을 닫기 전에 복사합니다. 스크립트는 환경 변수 `FIGMA_TOKEN`을 먼저 보고, 없으면 `~/.config/figma-to-pptx/token` 파일을 읽습니다. **토큰을 대화창에 붙여 달라고 하지 말고**, 사용자가 자기 터미널에서 아래 한 줄을 실행하게 안내합니다. 실행하면 토큰을 묻고, Figma에서 복사한 토큰을 붙여 넣고 Enter를 누르면 저장됩니다(입력이 화면에 보이지 않는 것이 정상, 기록에도 남지 않음).
+   - Windows PowerShell: `$t = Read-Host "Figma token" -AsSecureString; New-Item -Force -ItemType Directory "$HOME\.config\figma-to-pptx" | Out-Null; [Net.NetworkCredential]::new('', $t).Password | Set-Content -Encoding ascii -NoNewline "$HOME\.config\figma-to-pptx\token"`
+   - macOS 터미널(zsh): `read -rs "T?Figma token: "; mkdir -p ~/.config/figma-to-pptx && printf %s "$T" > ~/.config/figma-to-pptx/token && chmod 600 ~/.config/figma-to-pptx/token; unset T; echo`
 2. **uv** (Python과 패키지 `python-pptx`, `pillow`, `fonttools`를 알아서 준비). 없으면 설치합니다.
    - Windows PowerShell: `powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"` → 터미널을 새로 엽니다.
    - macOS: `curl -LsSf https://astral.sh/uv/install.sh | sh`
