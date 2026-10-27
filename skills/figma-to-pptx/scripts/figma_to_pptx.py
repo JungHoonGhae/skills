@@ -192,7 +192,7 @@ class Fonts:
             return self.faces[family, w]
         name = family if w in (400, 700) else f'{family} {WEIGHTS[w]}'
         path = self.build(family, w, name)
-        measure = ImageFont.truetype(path, 100) if path else None
+        measure = ImageFont.truetype(io.BytesIO(open(path, 'rb').read()), 100) if path else None   # bytes: Windows user folders with Korean names
         if path and self.embeddable(path):
             self.embeds[name]['bold' if w == 700 else 'regular'] = path
         self.faces[family, w] = (name, w == 700, measure)
@@ -726,7 +726,7 @@ def run(args):
         rasters.update({nid: download(u) for nid, u in got.items() if u})
     for nid in rasters:
         report[f'pictures for layers PowerPoint cannot draw ({need[nid]})'] += 1
-    out = args.out or re.sub(r'[\\/:*?"<>|]+', '_', title).strip() + '.pptx'
+    out = args.out or (re.sub(r'[\\/:*?"<>|]+', '_', title).strip(' .')[:100] or 'figma') + '.pptx'
     overrides = {}
     for spec in args.font:
         fam, _, files = spec.partition('=')
@@ -789,6 +789,9 @@ def self_test():
 
 
 def main():
+    for stream in (sys.stdout, sys.stderr):   # Windows pipes default to cp949/cp1252 and choke on frame names
+        if hasattr(stream, 'reconfigure'):
+            stream.reconfigure(encoding='utf-8', errors='replace')
     ap = argparse.ArgumentParser(description='Figma frames -> fully editable PowerPoint (.pptx)')
     ap.add_argument('target', nargs='?', help='Figma URL (node-id of a page, section or frame) or a file key')
     ap.add_argument('-n', '--node', help='node id such as 280:2 (overrides the URL)')
