@@ -1,17 +1,27 @@
 ---
 name: openkakao-cli
 description: >-
-  Work with OpenKakao CLI (`openkakao-cli`) for KakaoTalk on macOS. Use whenever the user wants to send or read KakaoTalk messages from the terminal, inspect chats, automate from chat data, or wire KakaoTalk into local scripts/agents. On current KakaoTalk macOS builds the recommended path is the **login-free AX-automation commands** `local-send` and `ax-read`, which drive the KakaoTalk UI directly via the macOS Accessibility API (no server login, no network). Trigger on `local-send`, `ax-read`, `allow_ax_send`, `allowed_send_chats`, "Accessibility", "send kakao(talk)", "read kakao(talk)", as well as legacy terms `send`, `read`, `chats`, `watch`, `hook`, `webhook`, `LOCO`, `chat_id`, `local-chats`, `local-read`, `local-search`, `doctor`, `login`, `auth-status` (note: the server-login-based commands are broken on recent builds — see below).
+  Work with OpenKakao CLI (`openkakao-cli`) for KakaoTalk on macOS. Use whenever the user wants to send or read KakaoTalk messages from the terminal, inspect chats, automate from chat data, or wire KakaoTalk into local scripts/agents. On current KakaoTalk macOS builds the recommended path is the **login-free AX-automation commands** `local-send` and `ax-read`, which drive the KakaoTalk UI directly via the macOS Accessibility API (no server login, no network). Trigger on `local-send`, `ax-read`, `allow_ax_send`, `allowed_send_chats`, "Accessibility", "send kakao(talk)", "read kakao(talk)", as well as legacy terms `send`, `read`, `chats`, `watch`, `hook`, `webhook`, `LOCO`, `chat_id`, `local-chats`, `local-read`, `local-search`, `doctor`, `login`, `auth-status` (note: the server-login-based commands are broken on recent builds, see below). Also use it for focus-free automation (sending text or files without stealing the user's focus), opening chat windows, mentions, and incoming-message detection with `notif-watch`.
 ---
 
 # OpenKakao CLI
 
-`openkakao-cli` is a KakaoTalk CLI for macOS. The binary is **`openkakao-cli`** (older docs/skills said `openkakao-rs` — that name is obsolete).
+`openkakao-cli` is a KakaoTalk CLI for macOS. The binary is **`openkakao-cli`** (older docs/skills said `openkakao-rs`: that name is obsolete).
 
 > [!IMPORTANT]
-> **Server login is broken on recent KakaoTalk macOS builds.** `login --save`/`login --manual` and everything that depends on a LOCO/REST session (`send`, `read`, `chats`, `watch`, `friends`, `me`, etc.) mostly do not work anymore, and **retrying login from an unregistered device can get the account's sub-device login blocked** — do not loop on it.
+> **Server login is broken on recent KakaoTalk macOS builds.** `login --save`/`login --manual` and everything that depends on a LOCO/REST session (`send`, `read`, `chats`, `watch`, `friends`, `me`, etc.) mostly do not work anymore, and **retrying login from an unregistered device can get the account's sub-device login blocked**: do not loop on it.
 >
-> **But the CLI still works without logging in.** `local-send` and `ax-read` drive the real KakaoTalk app UI via the macOS Accessibility (AX) API — no server session, no network contact — so they are the reliable path for sending and reading messages today. Prefer them.
+> **But the CLI still works without logging in.** `local-send` and `ax-read` drive the real KakaoTalk app UI via the macOS Accessibility (AX) API: no server session, no network contact: so they are the reliable path for sending and reading messages today. Prefer them.
+
+## Focus-free recipes (verified 2026-11-06, KakaoTalk 26.9.0)
+
+The 1.9.0 commands below raise KakaoTalk and press keys, so they fail with `could not verify focus` while the user is typing and leave the user's app unfocused. When the user must keep working on that Mac (or you drive it over SSH), use the AX-only JXA recipes in [references/focus-free-recipes.md](references/focus-free-recipes.md) instead; each was measured with the user's app staying frontmost:
+
+- **Send text** to an open chat window (~3 s): insert via `AXSelectedText`, then `AXPress` the `전송` button. Open the reference when a plain `local-send` is not acceptable because of focus.
+- **Send any file** (~10 s, `.docx` verified): `AXPress` the `파일전송` button, drive the file panel by selecting sidebar and list rows, then `AXPress` `N개 전송`. Open it for files (1.9.0 `local-send-photo` only takes images and fails on Korean button titles).
+- **Open a closed chat / show a hidden main window**: chat-list row menu `채팅방 열기`; menu bar `창 > 채팅`. Open it when the target window is not open.
+- **Incoming messages**: `notif-watch` needed no extra permission; its fields and limits are listed there.
+- **Warnings** you must read before touching menus or keys: never post Escape to KakaoTalk; pid-posted keys do nothing in the background; bubble context menus are often invisible to AX.
 
 ## Login-free path (recommended): `local-send` / `ax-read`
 
@@ -27,9 +37,9 @@ openkakao-cli local-send "<chat display name>" "message" -y --json
 
 Key facts:
 
-- **Chats are matched by their exact display name in the chat list** — not a `chat_id`. Matching is exact (not substring), and if two visible chats share the same name the command refuses to guess. For the memo/self chat, use your own display name (KakaoTalk does not use the literal string "나와의 채팅" in its AX tree).
+- **Chats are matched by their exact display name in the chat list**: not a `chat_id`. Matching is exact (not substring), and if two visible chats share the same name the command refuses to guess. For the memo/self chat, use your own display name (KakaoTalk does not use the literal string "나와의 채팅" in its AX tree).
 - **`ax-read` only returns messages currently rendered on screen.** Scroll up in KakaoTalk first for older history. Photos/files show as `"[사진]"`/`"[파일]"` placeholders; text messages carry their timestamp.
-- **`local-send` requires an explicit opt-in AND an exact-match allowlist** — see Safety below. This is the only guard against sending to the wrong chat (there is no chat-id to cross-check).
+- **`local-send` requires an explicit opt-in AND an exact-match allowlist**: see Safety below. This is the only guard against sending to the wrong chat (there is no chat-id to cross-check).
 - No network, no tokens, no ban risk from these two commands (they never contact Kakao's servers).
 - `OPENKAKAO_CLI_DEBUG=1` prints per-step timing to stderr for `local-send`/`ax-read`.
 
@@ -44,8 +54,8 @@ allow_ax_send = true
 allowed_send_chats = ["exact display name you allow", "another allowed chat"]
 ```
 
-- `allow_ax_send = true` — general opt-in for AX-based sending.
-- `allowed_send_chats` — **exact-match allowlist**. A chat not on this list is rejected before anything is typed. `--dry-run` skips both checks so you can preview against any name.
+- `allow_ax_send = true`: general opt-in for AX-based sending.
+- `allowed_send_chats`: **exact-match allowlist**. A chat not on this list is rejected before anything is typed. `--dry-run` skips both checks so you can preview against any name.
 
 ## Quick checks
 
@@ -65,7 +75,7 @@ brew upgrade openkakao-cli
 
 If `brew install` says *Refusing to load formula … from untrusted tap*, run the `brew trust --formula …` line above. Trusting the one formula is narrower than `brew trust junghoonghae/openkakao` (the whole tap).
 
-## Local database commands — currently unreliable
+## Local database commands: currently unreliable
 
 ```bash
 openkakao-cli local-chats [-n 50]            # list chats from the local encrypted DB
@@ -74,7 +84,7 @@ openkakao-cli local-search "keyword" [-n 20] # search local DB
 openkakao-cli local-schema                   # dump DB schema
 ```
 
-These read the SQLCipher-encrypted KakaoTalk DB directly (no server contact). **On recent KakaoTalk macOS builds the key-derivation formula has drifted, so decryption often fails** even when the user ID and device UUID are recovered — treat these as unreliable and prefer `ax-read` for login-free reading.
+These read the SQLCipher-encrypted KakaoTalk DB directly (no server contact). **On recent KakaoTalk macOS builds the key-derivation formula has drifted, so decryption often fails** even when the user ID and device UUID are recovered: treat these as unreliable and prefer `ax-read` for login-free reading.
 
 ## Server-login commands (mostly broken on recent builds)
 
@@ -162,8 +172,8 @@ The main window's title depends on the UI language (`카카오톡` in Korean); a
 
 The tool looks for the window whose `AXIdentifier` is `Main Window`. It is missing when the main window is closed, **or when it sits on another Space (virtual desktop)**: the Accessibility API drops windows on other Spaces from the window list entirely. By design the tool never brings KakaoTalk to the front, so fix it once by hand:
 
-- Dock → right-click KakaoTalk → Options → Assign To → **All Desktops**, and
-- make sure the main window is open and not minimized (a minimized main window gives its own error).
+- Dock → right-click KakaoTalk → Options → Assign To → **All Desktops** (or, with the user's consent, `defaults write com.apple.spaces app-bindings -dict-add com.kakao.kakaotalkmac AllSpaces && killall Dock`; the Dock restarts for about a second), and
+- make sure the main window is open and not minimized (a minimized main window gives its own error). A main window hidden with its close button comes back through the app menu bar `창 > 채팅` (`AXPress`) without activating the app; `tell application "KakaoTalk" to reopen` activates it and steals focus, so avoid it.
 
 Opening the app with `open -a KakaoTalk` also works but steals the user's focus; avoid it on a Mac someone is using.
 
@@ -182,9 +192,12 @@ brew install openkakao-cli
 ## Guardrails
 
 - **Prefer `local-send`/`ax-read`** (login-free, no ban risk) over the server-login commands, which are broken on current builds.
-- **Never loop on `login`** from an unregistered device — it can get the account's sub-device login blocked (real cases reported).
+- **Never loop on `login`** from an unregistered device: it can get the account's sub-device login blocked (real cases reported).
 - **`local-send` only sends to allowlisted chats.** Keep `allowed_send_chats` tight; recommend `--dry-run` first. Do not add a chat to the allowlist without the user's intent.
 - **Test on the memo/self chat first.** Send to other people's chats only when the user explicitly says to, with the exact text they approved.
+- **Never post the Escape key to KakaoTalk's pid.** KakaoTalk closes the focused chat window (and the main window) on Escape. Dismiss menus with `AXCancel` and sheets with their `취소` button.
+- **Key events posted to KakaoTalk's pid do nothing while it is not frontmost.** Anything needing Return, ⌘V, ⌘O or ⌘⇧G needs a raise; prefer the AX-only recipes.
+- **Bubble context menus are unreliable through AX.** If a menu opened by `AXShowMenu` is not found within a bounded poll, type nothing and tell the user to dismiss any visible menu by clicking elsewhere.
 - **Prefix/traceability:** by default outgoing messages get `🤖 [Sent via openkakao]` prepended. Use `--no-prefix` to disable, or put a custom tag in the message text.
 - Do not expose personal chat content unless the user explicitly asks; prefer summaries.
-- `ax-read` reads only what's on screen — don't claim full history from it.
+- `ax-read` reads only what's on screen: don't claim full history from it.
