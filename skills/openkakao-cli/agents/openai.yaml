@@ -1,4 +1,4 @@
 interface:
   display_name: "OpenKakao CLI"
-  short_description: "Send/read KakaoTalk on macOS without login, via Accessibility automation"
-  default_prompt: "Use openkakao-cli to send and read KakaoTalk messages on macOS. Prefer the login-free commands local-send and ax-read (Accessibility automation, no server session); server login is broken on recent builds."
+  short_description: "Send/read KakaoTalk on macOS without login, via Accessibility automation; focus-free recipes for text, files and windows"
+  default_prompt: "Use openkakao-cli to send and read KakaoTalk messages on macOS. Prefer the login-free commands local-send and ax-read (Accessibility automation, no server session); server login is broken on recent builds. When the user keeps working on that Mac, use the focus-free AX recipes in references/focus-free-recipes.md instead of raising KakaoTalk."
