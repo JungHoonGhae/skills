@@ -44,7 +44,7 @@ Chats are matched by their **exact display name** (the window title). The memo c
 
 1. `allow_ax_send = true` and the exact name in `allowed_send_chats` (`init --allow-chat` does both). Do not add a chat without the user's intent.
 2. The chat window open on the active Space, or `--open-if-needed`.
-3. **The person at that Mac approves a macOS device-owner prompt (Touch ID or password) for every real send, reply and edit.** `-y` skips only the terminal confirmation. Tell the user the prompt will appear. If they set `[safety] device_owner_auth_grace_secs` (default 0, sudo-style reuse of one approval), later sends within that window skip the prompt; only the human sets it, never the agent.
+3. **The person at that Mac approves a macOS device-owner prompt (Touch ID or password) for every real send, reply and edit.** `-y` skips only the terminal confirmation. Tell the user the prompt will appear. If they set `[safety] device_owner_auth_grace_secs` (default 0, at most 900, sudo-style reuse of one approval), later sends within that window skip the prompt. Only the human sets it, never the agent: the approval time is a file their account can write, so the window trusts every local process on that Mac.
 
 ## Reading results
 
