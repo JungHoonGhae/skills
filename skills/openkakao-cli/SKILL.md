@@ -58,9 +58,12 @@ Homebrew install/upgrade:
 
 ```bash
 brew tap JungHoonGhae/openkakao
+brew trust --formula junghoonghae/openkakao/openkakao-cli   # Homebrew 7+ refuses untrusted taps without this
 brew install openkakao-cli
 brew upgrade openkakao-cli
 ```
+
+If `brew install` says *Refusing to load formula … from untrusted tap*, run the `brew trust --formula …` line above. Trusting the one formula is narrower than `brew trust junghoonghae/openkakao` (the whole tap).
 
 ## Local database commands — currently unreliable
 
@@ -91,6 +94,20 @@ openkakao-cli friends / me / settings / profile / stats             # profile & 
 
 If server login is ever needed (older builds), it still uses `~/.config/openkakao/config.toml` (`[safety] allow_loco_write = true` gates LOCO writes) and `~/.config/openkakao/state.json` for recovery state. But default to the AX path above.
 
+## Driving another Mac over SSH
+
+KakaoTalk desktop is usually signed in on one Mac (the one the user works on), while the agent may run on another. The AX commands work over SSH, with three one-time conditions:
+
+1. **Install on the Mac that runs the signed-in KakaoTalk**, not the agent's Mac. Each Mac has its own `~/.config/openkakao/config.toml` allowlist.
+2. **Check that KakaoTalk is signed in there.** A single window named `로그인` means it is signed out:
+   ```bash
+   ssh <mac> 'osascript -e "tell application \"System Events\" to tell process \"KakaoTalk\" to get name of every window"'
+   ```
+   Do not sign in on a second Mac just to send: the desktop session may move and sign the user's main Mac out.
+3. **Grant Accessibility to the SSH process.** Over SSH the AX calls are attributed to `/usr/libexec/sshd-keygen-wrapper`, so the error is *Accessibility permission is not granted to this terminal app*. A human adds it once: System Settings → Privacy & Security → Accessibility → `+` → ⌘⇧G → `/usr/libexec/sshd-keygen-wrapper` → turn it on. Trade-off: every SSH session to that Mac can then drive its UI, so do this only on a Mac reachable by key-only SSH (for example over Tailscale).
+
+macOS has no `timeout` command; do not wrap remote calls with it.
+
 ## Recommended workflow
 
 1. Sanity: `openkakao-cli --version && openkakao-cli doctor`
@@ -115,11 +132,40 @@ If server login is ever needed (older builds), it still uses `~/.config/openkaka
 
 ### "chat '<name>' not found in visible/loaded chat list"
 
-The name doesn't exactly match a chat in KakaoTalk's list. Use the exact display name as shown in the chat list. For the memo/self chat, use your own display name. Also make sure the KakaoTalk main window (chat list) is open.
+The name doesn't exactly match a row in KakaoTalk's main chat list. Check, in this order:
+
+1. **The chat-list search box still holds a term.** The list then shows only matching chats, so everything else is "not found". Clear the search in KakaoTalk by hand: setting the field's AX value to empty clears the text but does not re-run the filter.
+2. **Exact display name.** Use the name exactly as the row shows it (open chat windows are titled the same). For the memo/self chat, use your own display name.
+3. **The list is lazily loaded.** Only rows KakaoTalk has loaded can match; scroll the chat list if the chat is far down.
+
+To see the names the tool can match, dump the first text of each loaded row (run where KakaoTalk runs, with Accessibility granted):
+
+```bash
+cat > /tmp/kakao-rows.js <<'JS'
+const w = Application('System Events').processes.byName('KakaoTalk').windows.byName('카카오톡');
+const out = [];
+(function walk(el, d) {
+  if (d > 8 || out.length > 200) return;
+  let role = ''; try { role = el.role(); } catch (e) { return; }
+  if (role === 'AXRow') { try { const t = el.staticTexts(); out.push(t.length ? t[0].value() : ''); } catch (e) {} return; }
+  let kids = []; try { kids = el.uiElements(); } catch (e) {}
+  for (const k of kids) walk(k, d + 1);
+})(w, 0);
+out.join('\n');
+JS
+osascript -l JavaScript /tmp/kakao-rows.js
+```
+
+The main window's title depends on the UI language (`카카오톡` in Korean); adjust `byName(...)` if needed.
 
 ### "could not find KakaoTalk's main chat-list window"
 
-KakaoTalk's main window is closed. Open the app (`open -a KakaoTalk`) and make sure the chat list window is showing, then retry.
+The tool looks for the window whose `AXIdentifier` is `Main Window`. It is missing when the main window is closed, **or when it sits on another Space (virtual desktop)**: the Accessibility API drops windows on other Spaces from the window list entirely. By design the tool never brings KakaoTalk to the front, so fix it once by hand:
+
+- Dock → right-click KakaoTalk → Options → Assign To → **All Desktops**, and
+- make sure the main window is open and not minimized (a minimized main window gives its own error).
+
+Opening the app with `open -a KakaoTalk` also works but steals the user's focus; avoid it on a Mac someone is using.
 
 ### Ambiguous match / refuses to send
 
@@ -138,6 +184,7 @@ brew install openkakao-cli
 - **Prefer `local-send`/`ax-read`** (login-free, no ban risk) over the server-login commands, which are broken on current builds.
 - **Never loop on `login`** from an unregistered device — it can get the account's sub-device login blocked (real cases reported).
 - **`local-send` only sends to allowlisted chats.** Keep `allowed_send_chats` tight; recommend `--dry-run` first. Do not add a chat to the allowlist without the user's intent.
+- **Test on the memo/self chat first.** Send to other people's chats only when the user explicitly says to, with the exact text they approved.
 - **Prefix/traceability:** by default outgoing messages get `🤖 [Sent via openkakao]` prepended. Use `--no-prefix` to disable, or put a custom tag in the message text.
 - Do not expose personal chat content unless the user explicitly asks; prefer summaries.
 - `ax-read` reads only what's on screen — don't claim full history from it.
