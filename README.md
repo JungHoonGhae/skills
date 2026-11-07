@@ -27,7 +27,7 @@ If these skills help you, consider supporting their maintenance:
 | **[readme-doctor](skills/readme-doctor/)** | Diagnose README problems and prescribe improvements | "fix my README", "analyze this README", "make README like [reference]" | [![readme-doctor](https://skills-badge.vercel.app/badge/JungHoonGhae/skills/readme-doctor?style=flat-square)](https://skills.sh/JungHoonGhae/skills/readme-doctor) |
 | **[oh-my-lilys](skills/oh-my-lilys/)** | Summarize YouTube, PDF, websites, and audio via lilys.ai CLI | "summarize URL", "generate report", "summarize video" | [![oh-my-lilys](https://skills-badge.vercel.app/badge/JungHoonGhae/skills/oh-my-lilys?style=flat-square)](https://skills.sh/JungHoonGhae/skills/oh-my-lilys) |
 | **[discord-admin-py](skills/discord-admin-py/)** | Discord server administration via inference.sh | Discord bot, channel management, role assignment | [![discord-admin-py](https://skills-badge.vercel.app/badge/JungHoonGhae/skills/discord-admin-py?style=flat-square)](https://skills.sh/JungHoonGhae/skills/discord-admin-py) |
-| **[openkakao-cli](skills/openkakao-cli/)** | Send text and files, reply, edit and read KakaoTalk on macOS without login, focus-free via Accessibility (openkakao-cli 1.10.0+), with setup, error codes and SSH guidance | "openkakao", "local-send", "local-send-file", "ax-read", "send kakaotalk" | [![openkakao-cli](https://skills-badge.vercel.app/badge/JungHoonGhae/skills/openkakao-cli?style=flat-square)](https://skills.sh/JungHoonGhae/skills/openkakao-cli) |
+| **[openkakao-cli](https://github.com/JungHoonGhae/openkakao-cli/tree/main/skills/openkakao-cli)** | Moved: now ships with the CLI in [JungHoonGhae/openkakao-cli](https://github.com/JungHoonGhae/openkakao-cli) (send, reply, edit, delete and read KakaoTalk on macOS without login) | "openkakao", "local-send", "ax-read", "send kakaotalk" | `npx skills add JungHoonGhae/openkakao-cli` |
 | **[macos-update-block](skills/macos-update-block/)** | Toggle macOS automatic-update blocking on/off (settings + hosts), or check status | "맥 업데이트 차단/켜기", "stop macOS updating", "block Tahoe update" | [![macos-update-block](https://skills-badge.vercel.app/badge/JungHoonGhae/skills/macos-update-block?style=flat-square)](https://skills.sh/JungHoonGhae/skills/macos-update-block) |
 | **[figma-to-pptx](skills/figma-to-pptx/)** | Convert Figma frames to a fully editable PowerPoint with the same fonts embedded | "Figma를 PPT로", "figma to pptx", "editable PowerPoint from Figma" | [![figma-to-pptx](https://skills-badge.vercel.app/badge/JungHoonGhae/skills/figma-to-pptx?style=flat-square)](https://skills.sh/JungHoonGhae/skills/figma-to-pptx) |
 
@@ -47,7 +47,7 @@ npx skills add JungHoonGhae/skills@ships-with-steipete
 npx skills add JungHoonGhae/skills@readme-doctor
 npx skills add JungHoonGhae/skills@oh-my-lilys
 npx skills add JungHoonGhae/skills@discord-admin-py
-npx skills add JungHoonGhae/skills@openkakao-cli
+npx skills add JungHoonGhae/openkakao-cli   # openkakao-cli moved to its own repo
 npx skills add JungHoonGhae/skills@macos-update-block
 npx skills add JungHoonGhae/skills@figma-to-pptx
 ```
